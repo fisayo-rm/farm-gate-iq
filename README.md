@@ -14,7 +14,7 @@ synthetic.
 
 1. **Interactive walkthrough (no setup, always works)** — a click-through tour of the whole
    pipeline:
-   **▶ <FILL: GitHub Pages link, e.g. https://<user>.github.io/<repo>/demo/>**
+   **▶ https://fisayo-rm.github.io/farm-gate-iq/demo/**
 2. **Live run on our hosted instance (no setup either)** — click the form links in
    *Live run* below to actually run the workflows on our n8n instance, and watch the
    results land in the read-only workbook. No n8n account or install needed.
