@@ -1,0 +1,759 @@
+{
+  "name": "WF-003 Price Summary",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ae9aadb9-e5bf-4e7d-a5dc-346ec888032e",
+      "name": "Run price summary",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        11312,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "price_entries",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "32471843-c5cb-4a55-aa92-f74f09ae4d3a",
+      "name": "Read price_entries",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        11472,
+        1952
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $('Read price_entries').all().map(i => i.json);\n\nconst entries = rows\n  .filter(r => String(r.commodity || '').toLowerCase().trim() === 'maize')\n  .map(r => ({\n    location: r.location || '',\n    price: parseFloat(r.price),\n    price_unit: r.price_unit || 'per bag',\n    source_type: r.source_type || 'unknown',\n    source_name: r.source_name || '',\n    observed_date: r.observed_date || '',\n    confidence: (r.confidence || 'low')\n  }))\n  .filter(e => !isNaN(e.price) && e.price > 0);\n\nconst count = entries.length;\nconst location_scope = 'Kaduna State (sample)';\nconst retrieval_query = 'maize farmgate and market price, Kaduna State area, recent months and lean season, 100kg bag price and outlook';\n\n// Source breakdown\nconst source_breakdown = {};\nentries.forEach(e => { source_breakdown[e.source_type] = (source_breakdown[e.source_type] || 0) + 1; });\nconst source_list = Object.keys(source_breakdown).map(k => k + ' (' + source_breakdown[k] + ')').join(', ');\n\n// Insufficient-data guard: refuse to summarize prices when too few entries\nif (count < 3) {\n  const parts = [];\n  parts.push('You are writing a maize price note for a farmer cooperative in Kaduna State.');\n  parts.push('There are only ' + count + ' usable maize price entries available. This is INSUFFICIENT to summarize the market reliably.');\n  parts.push('Write 1-2 plain sentences stating there is not enough recent price data to give a reliable summary, and that more entries are needed before negotiation guidance.');\n  parts.push('Do NOT invent, estimate, or state any specific price or price range as reliable.');\n  parts.push('Return ONLY a JSON object, no markdown fences:');\n  parts.push('{ \"summary_text\": \"<the note>\", \"data_confidence\": \"insufficient\", \"mentions_outliers\": false }');\n  return [{ json: {\n    insufficient_data: true,\n    count: count,\n    commodity: 'maize',\n    location_scope: location_scope,\n    stats: null,\n    outliers: [],\n    source_breakdown: source_breakdown,\n    source_list: source_list,\n    data_confidence: 'insufficient',\n    retrieval_query: retrieval_query,\n    prompt: parts.join('\\n')\n  }}];\n}\n\nconst prices = entries.map(e => e.price).sort((a, b) => a - b);\nconst min = prices[0];\nconst max = prices[prices.length - 1];\nconst mid = Math.floor(prices.length / 2);\nconst median = prices.length % 2 === 0 ? Math.round((prices[mid - 1] + prices[mid]) / 2) : prices[mid];\nconst mean = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);\n\n// Outlier rule (rule-based thresholds): outside +/-25% of median, or outside the sane band 30000-80000\nconst lowerBound = Math.round(median * 0.75);\nconst upperBound = Math.round(median * 1.25);\nconst outliers = entries.filter(e =>\n  e.price < lowerBound || e.price > upperBound || e.price < 30000 || e.price > 80000\n).map(e => ({\n  price: e.price,\n  source_type: e.source_type,\n  source_name: e.source_name,\n  direction: (e.price > upperBound || e.price > 80000) ? 'above range' : 'below range'\n}));\n\n// Rule-based data confidence: based on volume, then downgraded if sources are weak\nlet data_confidence;\nif (count < 6) data_confidence = 'low';\nelse if (count < 10) data_confidence = 'medium';\nelse data_confidence = 'high';\nconst weak = entries.filter(e => e.confidence === 'low' || e.source_type === 'sample' || e.source_type === 'public_report').length;\nif (weak / count > 0.4) {\n  if (data_confidence === 'high') data_confidence = 'medium';\n  else if (data_confidence === 'medium') data_confidence = 'low';\n}\n\nconst stats = { count, min, max, median, mean, lowerBound, upperBound };\nconst priceUnit = entries[0].price_unit || 'per bag';\n\nconst parts = [];\nparts.push('You are writing a short farmgate maize price summary for a Nigerian farmer cooperative in Kaduna State.');\nparts.push('Use ONLY the figures provided below. Do NOT invent, estimate, forecast, or use any number that is not given here.');\nparts.push('If you are unsure, say the data is limited rather than guessing.');\nparts.push('');\nparts.push('DATA (all values in Naira, ' + priceUnit + '):');\nparts.push('Commodity: maize');\nparts.push('Location scope: ' + location_scope);\nparts.push('Number of price entries: ' + count);\nparts.push('Lowest: ' + min);\nparts.push('Highest: ' + max);\nparts.push('Median: ' + median);\nparts.push('Source types present: ' + source_list);\nparts.push('Computed data confidence: ' + data_confidence);\nif (outliers.length) {\n  parts.push('Outliers flagged (outside +/-25% of median or outside 30000-80000):');\n  outliers.forEach(o => parts.push('  - NGN ' + o.price + ' (' + o.direction + ') from ' + o.source_name + ' [' + o.source_type + ']'));\n} else {\n  parts.push('Outliers flagged: none');\n}\nparts.push('');\nparts.push('Write the summary as 2-4 plain sentences a farmer can understand. You MUST:');\nparts.push('1. State the price range (lowest to highest) and the median.');\nparts.push('2. Mention how many entries this is based on and the source types.');\nparts.push('3. If any outliers were flagged, note that they should be reviewed before negotiation.');\nparts.push('4. End with the data confidence level (' + data_confidence + ') and the reason (number of entries and source mix).');\nparts.push('Do not add a greeting or signature.');\nparts.push('');\nparts.push('Return ONLY a JSON object, no markdown fences:');\nparts.push('{ \"summary_text\": \"<the summary>\", \"data_confidence\": \"' + data_confidence + '\", \"mentions_outliers\": ' + (outliers.length > 0 ? 'true' : 'false') + ' }');\n\nreturn [{ json: {\n  insufficient_data: false,\n  count: count,\n  commodity: 'maize',\n  location_scope: location_scope,\n  stats: stats,\n  outliers: outliers,\n  source_breakdown: source_breakdown,\n  source_list: source_list,\n  data_confidence: data_confidence,\n  retrieval_query: retrieval_query,\n  prompt: parts.join('\\n')\n}}];"
+      },
+      "id": "1b7563b7-9ff8-4327-8ab6-4996c29d5682",
+      "name": "Compute price stats & outliers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        11664,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "farmgateiq-market-intel",
+          "mode": "list",
+          "cachedResultName": "farmgateiq-market-intel"
+        },
+        "prompt": "={{ $('Compute price stats & outliers').all()[0].json.retrieval_query }}",
+        "options": {
+          "pineconeNamespace": "market_intel"
+        }
+      },
+      "id": "40d61983-cab4-40c1-8a74-8b96f99c2019",
+      "name": "Retrieve market context",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        11952,
+        1712
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "3OGW85ZZOkPv0zG8",
+          "name": "FarmGateIQ Pinecone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "81ef3d30-cb0e-4e09-a5b2-18dd7fe73bc2",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        11952,
+        1920
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "0UL419sw5uZkY2pZ",
+          "name": "FarmGateIQ OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const stats = $('Compute price stats & outliers').all()[0].json;\nconst retrieved = $('Retrieve market context').all().map((it) => {\n  const d = it.json.document || it.json;\n  return { text: String(d.pageContent || d.text || '').trim(), meta: d.metadata || d.meta || {} };\n}).filter((r) => r.text);\n\nconst parts = [];\nparts.push('You are writing a short farmgate maize price summary for a Nigerian farmer cooperative in Kaduna State (the Kaduna Maize Farmers Cooperative).');\nparts.push('You have TWO kinds of input: (A) price numbers the cooperative computed from its own records, and (B) retrieved public market-intelligence passages for context.');\nparts.push('RULES:');\nparts.push('- The numbers in (A) are the only authoritative figures for this cooperative. Do NOT change them.');\nparts.push('- Do NOT invent prices. You may cite figures from the retrieved passages (B) ONLY to give context, and you MUST attribute each such figure to its source.');\nparts.push('- If the retrieved passages are empty or not relevant, say plainly that no external market context was available and rely only on the numbers in (A).');\nparts.push('- The bag unit is a 100kg bag.');\nparts.push('');\nparts.push('(A) COOPERATIVE OWN DATA (Naira per 100kg bag):');\nif (stats.insufficient_data) {\n  parts.push('Only ' + stats.count + ' usable maize price entries - INSUFFICIENT to state a reliable range. Do not invent one.');\n} else {\n  const s = stats.stats;\n  parts.push('Entries: ' + stats.count + ' | Lowest: ' + s.min + ' | Highest: ' + s.max + ' | Median: ' + s.median);\n  parts.push('Source types: ' + stats.source_list);\n  parts.push('Computed data confidence: ' + stats.data_confidence);\n  if ((stats.outliers || []).length) {\n    parts.push('Outliers flagged:');\n    stats.outliers.forEach((o) => parts.push('  - NGN ' + o.price + ' (' + o.direction + ') from ' + o.source_name + ' [' + o.source_type + ']'));\n  } else {\n    parts.push('Outliers flagged: none');\n  }\n}\nparts.push('');\nparts.push('(B) RETRIEVED MARKET CONTEXT (public sources; cite by source):');\nif (retrieved.length) {\n  retrieved.forEach((r, i) => {\n    parts.push('[' + (i + 1) + '] source: ' + (r.meta.source || 'unknown') + (r.meta.period ? ' (' + r.meta.period + ')' : ''));\n    parts.push(r.text);\n    parts.push('');\n  });\n} else {\n  parts.push('(none retrieved)');\n  parts.push('');\n}\nparts.push('WRITE the summary as 2-4 plain sentences a farmer can understand. You MUST:');\nif (stats.insufficient_data) {\n  parts.push('1. State that the cooperative does not have enough recent price entries to give a reliable range, and do not invent one.');\n  parts.push('2. You MAY add one sentence of market context from (B) with its source, clearly labelled as external context, if relevant.');\n} else {\n  parts.push('1. State the cooperative own price range (lowest to highest) and median, and how many entries / source types it is based on.');\n  parts.push('2. Add brief market context from (B), attributing each contextual claim to its source (for example: according to FEWS NET ...).');\n  parts.push('3. If outliers were flagged, note they should be reviewed before negotiation.');\n  parts.push('4. End with the data confidence level (' + stats.data_confidence + ').');\n}\nparts.push('If (B) was empty, explicitly say that no external market context was retrieved.');\nparts.push('Do not add a greeting or signature.');\nparts.push('');\nparts.push('Return ONLY a JSON object, no markdown fences:');\nparts.push('{ \"summary_text\": \"<the summary>\", \"data_confidence\": \"' + stats.data_confidence + '\", \"mentions_outliers\": ' + (((stats.outliers || []).length > 0) ? 'true' : 'false') + ', \"sources_cited\": [] }');\n\nreturn [{ json: {\n  prompt: parts.join('\\n'),\n  retrieved_count: retrieved.length,\n  retrieved_sources: retrieved.map((r) => r.meta.source || 'unknown')\n}}];"
+      },
+      "id": "dba79832-d2e9-4836-ae58-d4d10d3304c1",
+      "name": "Build grounded prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        11920,
+        2176
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}"
+      },
+      "id": "2f138627-3834-430c-8312-74101030b01d",
+      "name": "Generate price summary",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        12608,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-6",
+          "cachedResultName": "Claude Sonnet 4.6"
+        },
+        "options": {}
+      },
+      "id": "14244ef0-693f-496a-912f-fb7be3eb5457",
+      "name": "Claude",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        12608,
+        2160
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "UltMUw3dgYtRgjfO",
+          "name": "FarmGateIQ Anthropic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst item = items[0].json;\nconst stats = $('Compute price stats & outliers').all()[0].json;\n\nlet parsed;\ntry {\n  const text = (item.text || item.output || '').replace(/```json\\s*/gi, '').replace(/```\\s*/g, '').trim();\n  parsed = JSON.parse(text);\n} catch (e) {\n  // Deterministic fallback built ONLY from real computed numbers - never invents a price\n  let fallback;\n  if (stats.insufficient_data) {\n    fallback = 'There are only ' + stats.count + ' recent maize price entries for ' + stats.location_scope + ', which is not enough to give a reliable price summary. More entries are needed before negotiation.';\n  } else {\n    const s = stats.stats;\n    fallback = 'Sample maize price entries for ' + stats.location_scope + ' range from NGN ' + s.min + ' to NGN ' + s.max + ' per bag, with a median of NGN ' + s.median + '. This is based on ' + stats.count + ' entries across ' + stats.source_list + '.' + (stats.outliers.length ? ' ' + stats.outliers.length + ' outlier price(s) were flagged and should be reviewed before negotiation.' : '') + ' Data confidence is ' + stats.data_confidence + ', given the number of entries and the source mix.';\n  }\n  parsed = { summary_text: fallback, data_confidence: stats.data_confidence, mentions_outliers: stats.outliers.length > 0, parse_error: e.message };\n}\n\nconst summary_text = String(parsed.summary_text || '').trim();\nconst data_confidence = parsed.data_confidence || stats.data_confidence;\nconst outlier_count = (stats.outliers || []).length;\nconst source_list = stats.source_list || Object.keys(stats.source_breakdown || {}).join(', ');\nconst reason = 'data_confidence: ' + data_confidence + ' | entries: ' + stats.count + ' | sources: ' + (source_list || 'n/a') + ' | outliers_flagged: ' + outlier_count;\n\nreturn [{ json: {\n  summary_text: summary_text,\n  data_confidence: data_confidence,\n  count: stats.count,\n  source_list: source_list,\n  outlier_count: outlier_count,\n  outliers: stats.outliers || [],\n  location_scope: stats.location_scope,\n  reason: reason,\n  insufficient_data: !!stats.insufficient_data\n}}];"
+      },
+      "id": "456f9481-2947-41da-b72e-7e58a9541d85",
+      "name": "Parse summary output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        12240,
+        1984
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wf003-ap-01",
+              "name": "id",
+              "value": "={{ \"appr_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-02",
+              "name": "approval_type",
+              "value": "farmer_update",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-03",
+              "name": "related_entity_id",
+              "value": "={{ \"price_summary_maize_\" + $now.toFormat('yyyy-MM-dd') }}",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-04",
+              "name": "requested_by",
+              "value": "system",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-05",
+              "name": "approved_by",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-06",
+              "name": "decision",
+              "value": "pending",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-07",
+              "name": "original_content",
+              "value": "={{ $json.summary_text }}",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-08",
+              "name": "final_content",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-09",
+              "name": "reason",
+              "value": "={{ $json.reason }}",
+              "type": "string"
+            },
+            {
+              "id": "wf003-ap-10",
+              "name": "decided_at",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "179f5d07-4045-4fe6-939f-dc2db8963632",
+      "name": "Assemble approval row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12512,
+        1744
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "approvals",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approval_type",
+              "displayName": "approval_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "related_entity_id",
+              "displayName": "related_entity_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "requested_by",
+              "displayName": "requested_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approved_by",
+              "displayName": "approved_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decision",
+              "displayName": "decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "original_content",
+              "displayName": "original_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "final_content",
+              "displayName": "final_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decided_at",
+              "displayName": "decided_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a9c5d42d-75b1-47d8-b0d1-f985b612c75c",
+      "name": "Append to approvals",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        13040,
+        1952
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wf003-al-01",
+              "name": "id",
+              "value": "={{ \"audit_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf003-al-02",
+              "name": "event_type",
+              "value": "llm_output",
+              "type": "string"
+            },
+            {
+              "id": "wf003-al-03",
+              "name": "actor",
+              "value": "system",
+              "type": "string"
+            },
+            {
+              "id": "wf003-al-04",
+              "name": "entity_type",
+              "value": "approval",
+              "type": "string"
+            },
+            {
+              "id": "wf003-al-05",
+              "name": "entity_id",
+              "value": "={{ $('Assemble approval row').all()[0].json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf003-al-06",
+              "name": "input_summary",
+              "value": "={{ 'maize price summary | entries: ' + $('Parse summary output').all()[0].json.count + ' | sources: ' + $('Parse summary output').all()[0].json.source_list }}",
+              "type": "string"
+            },
+            {
+              "id": "wf003-al-07",
+              "name": "output_summary",
+              "value": "={{ 'confidence: ' + $('Parse summary output').all()[0].json.data_confidence + ' | outliers_flagged: ' + $('Parse summary output').all()[0].json.outlier_count }}",
+              "type": "string"
+            },
+            {
+              "id": "wf003-al-08",
+              "name": "prompt_version",
+              "value": "v1.0",
+              "type": "string"
+            },
+            {
+              "id": "wf003-al-09",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1d2c6f5-3579-4629-b91d-24ce002211a8",
+      "name": "Prepare audit log row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        13328,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "audit_log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "actor",
+              "displayName": "actor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_type",
+              "displayName": "entity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_id",
+              "displayName": "entity_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_summary",
+              "displayName": "input_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output_summary",
+              "displayName": "output_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_version",
+              "displayName": "prompt_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "623223a0-e41c-45d2-ba91-52587533d17d",
+      "name": "Append to audit_log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        13616,
+        1952
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "fisayo.dmg@gmail.com",
+        "subject": "={{ 'FarmGateIQ — Maize price summary ready for approval (' + $('Parse summary output').all()[0].json.data_confidence + ' confidence)' }}",
+        "message": "={{ '<p><b>A maize price summary has been generated and is awaiting your approval before any farmer broadcast.</b></p>' + '<p>' + $('Parse summary output').all()[0].json.summary_text + '</p>' + '<hr><p><b>Basis</b><br>Entries used: ' + $('Parse summary output').all()[0].json.count + '<br>Source types: ' + $('Parse summary output').all()[0].json.source_list + '<br>Outliers flagged: ' + $('Parse summary output').all()[0].json.outlier_count + '<br>Data confidence: ' + $('Parse summary output').all()[0].json.data_confidence + '</p>' + '<p>Open the <b>approvals</b> tab in FarmGateIQ Demo to approve, edit, or reject this summary.</p>' }}",
+        "options": {}
+      },
+      "id": "9a9a59cc-7bf0-4f53-aa97-c6e1ee8d2269",
+      "name": "Notify manager — summary for approval",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        13904,
+        1952
+      ],
+      "webhookId": "f4c7a1b9-8e22-4c3d-9a01-bb0102030406",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CzCD5Wsv5f2rbOIk",
+          "name": "FarmGateIQ Gmail"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run price summary": {
+      "main": [
+        [
+          {
+            "node": "Read price_entries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read price_entries": {
+      "main": [
+        [
+          {
+            "node": "Compute price stats & outliers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute price stats & outliers": {
+      "main": [
+        [
+          {
+            "node": "Retrieve market context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build grounded prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build grounded prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate price summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Retrieve market context",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate price summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate price summary": {
+      "main": [
+        [
+          {
+            "node": "Parse summary output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse summary output": {
+      "main": [
+        [
+          {
+            "node": "Assemble approval row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble approval row": {
+      "main": [
+        [
+          {
+            "node": "Append to approvals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to approvals": {
+      "main": [
+        [
+          {
+            "node": "Prepare audit log row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare audit log row": {
+      "main": [
+        [
+          {
+            "node": "Append to audit_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to audit_log": {
+      "main": [
+        [
+          {
+            "node": "Notify manager — summary for approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "pRCNEh6HdS9yFxXn",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "40217fd6-237a-4e75-a278-544c62918a8b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+  },
+  "id": "jLI0pWZQXkdgCD00",
+  "tags": []
+}

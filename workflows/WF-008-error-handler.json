@@ -1,0 +1,73 @@
+{
+  "name": "WF-008 Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b8c30001-1111-4b80-9c07-700000000001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const e = $input.all()[0].json || {};\nconst wf = (e.workflow && e.workflow.name) ? e.workflow.name : 'unknown workflow';\nconst exec = e.execution || {};\nconst trig = e.trigger || {};\nconst msg = (exec.error && exec.error.message) ? exec.error.message\n  : (trig.error && trig.error.message) ? trig.error.message\n  : 'No error message available';\nconst lastNode = exec.lastNodeExecuted || (trig.error && trig.error.node && trig.error.node.name) || 'n/a';\nconst url = exec.url || '';\nconst when = $now.toISO();\n\nconst subject = 'FarmGateIQ \\u2014 Workflow error: ' + wf;\nconst html = '<p><b>A FarmGateIQ workflow failed.</b></p>'\n  + '<p>Workflow: ' + wf + '<br>Error: ' + msg + '<br>Last node: ' + lastNode + '<br>Time: ' + when + '</p>'\n  + (url ? '<p><a href=\"' + url + '\">Open the execution in n8n</a></p>' : '')\n  + '<p style=\"color:#888\">Automated alert from WF-008 Error Handler. Set this workflow as the Error Workflow in each workflow\\u2019s Settings.</p>';\n\nreturn [{ json: { subject: subject, html: html, wf: wf, error_message: msg, last_node: lastNode } }];"
+      },
+      "id": "b8c30002-2222-4b80-9c07-700000000002",
+      "name": "Build alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "fisayo.dmg@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "b8c30003-3333-4b80-9c07-700000000003",
+      "name": "Send admin alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -40,
+        300
+      ],
+      "webhookId": "b5c6d7e8-1a22-4a5d-9b00-001112030415",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CzCD5Wsv5f2rbOIk",
+          "name": "FarmGateIQ Gmail"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [ [ { "node": "Build alert", "type": "main", "index": 0 } ] ]
+    },
+    "Build alert": {
+      "main": [ [ { "node": "Send admin alert", "type": "main", "index": 0 } ] ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "wf008-0000-0000-0000-000000000001",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+  },
+  "id": "wf008ErrorHandler",
+  "tags": []
+}

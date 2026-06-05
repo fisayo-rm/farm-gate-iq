@@ -1,0 +1,420 @@
+{
+  "name": "WF-000 Form-to-Sheets Test",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "FarmGateIQ — Produce Lot Intake (Test)",
+        "formDescription": "Fill in the fields below to register a produce lot for testing.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Member name",
+              "placeholder": "e.g. Aminu Musa",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Commodity",
+              "placeholder": "e.g. White Maize",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Quantity",
+              "fieldType": "number",
+              "placeholder": "e.g. 50",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Unit",
+              "placeholder": "e.g. bags",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Location",
+              "placeholder": "e.g. Zaria, Kaduna",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Availability date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Asking price",
+              "fieldType": "number",
+              "placeholder": "e.g. 48000"
+            },
+            {
+              "fieldLabel": "Quality notes",
+              "fieldType": "textarea",
+              "placeholder": "e.g. Dry, bagged, no weevils"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f751808a-14a6-4a53-9b20-3dbfc915c7cc",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "17512b15-987d-4108-9407-cdbc07c1d095"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1000001-0000-0000-0000-000000000001",
+              "name": "id",
+              "value": "={{ \"lot_test_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000002",
+              "name": "cooperative_id",
+              "value": "coop_kaduna_001",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000003",
+              "name": "member_name",
+              "value": "={{ $json['Member name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000004",
+              "name": "commodity",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000005",
+              "name": "raw_commodity",
+              "value": "={{ $json['Commodity'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000006",
+              "name": "quantity",
+              "value": "={{ $json['Quantity'] }}",
+              "type": "number"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000007",
+              "name": "unit",
+              "value": "={{ $json['Unit'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000008",
+              "name": "raw_quantity_text",
+              "value": "={{ $json['Quantity'] + \" \" + $json['Unit'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000009",
+              "name": "location",
+              "value": "={{ $json['Location'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000010",
+              "name": "availability_date",
+              "value": "={{ $json['Availability date'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000011",
+              "name": "quality_notes",
+              "value": "={{ $json['Quality notes'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000012",
+              "name": "asking_price",
+              "value": "={{ $json['Asking price'] }}",
+              "type": "number"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000013",
+              "name": "asking_price_unit",
+              "value": "per bag",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000014",
+              "name": "status",
+              "value": "new",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000015",
+              "name": "confidence_score",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000016",
+              "name": "needs_review",
+              "value": "TRUE",
+              "type": "string"
+            },
+            {
+              "id": "a1000001-0000-0000-0000-000000000017",
+              "name": "prototype_data",
+              "value": "TRUE",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9e945fd4-7c46-4dba-994a-aa17c861f646",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "produce_lots",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cooperative_id",
+              "displayName": "cooperative_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "member_name",
+              "displayName": "member_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "commodity",
+              "displayName": "commodity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_commodity",
+              "displayName": "raw_commodity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit",
+              "displayName": "unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_quantity_text",
+              "displayName": "raw_quantity_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "availability_date",
+              "displayName": "availability_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality_notes",
+              "displayName": "quality_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "asking_price",
+              "displayName": "asking_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "asking_price_unit",
+              "displayName": "asking_price_unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confidence_score",
+              "displayName": "confidence_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_review",
+              "displayName": "needs_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prototype_data",
+              "displayName": "prototype_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a64c6a59-917d-4029-a643-adf5cfa84586",
+      "name": "Append row in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        528,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "688dd1b3-2f69-4ba6-ad5b-8011b21d646f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+  },
+  "id": "hn8KI66MVzumhsTG",
+  "tags": []
+}

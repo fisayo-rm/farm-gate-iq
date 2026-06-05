@@ -1,0 +1,13 @@
+# Allowlist strategy: ignore EVERYTHING by default, then re-include only the
+# files we want to publish. Nothing excluded is named here, so planning docs,
+# Claude/MCP config, phase folders, data, etc. are never referenced.
+
+/*
+/demo/*
+
+# --- re-include only these ---
+!/.gitignore
+!/README.md
+!/workflows/
+!/demo/
+!/demo/index.html

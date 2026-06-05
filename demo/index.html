@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FarmGateIQ — Interactive Walkthrough</title>
+<!--
+  FarmGateIQ — Interactive Guided Walkthrough (self-contained, single file)
+  ----------------------------------------------------------------------------
+  WHAT THIS IS
+  A click-through product tour. Each step reconstructs a screen from the real
+  demo (n8n, intake form, Google Sheets, Gmail) using the project's own data,
+  with a callout pointing to the key element + narration. No build, no CDN,
+  no accounts. Open in any browser, or host on GitHub Pages for a shareable link.
+
+  HOW POSITIONING WORKS
+  Each screen marks its key element with `data-spot`. At render time the script
+  measures that element and places the amber highlight ring over it and the
+  callout bubble next to it (auto-flipping above/below, clamped to the stage,
+  recomputed on resize). So callouts always land on their target regardless of
+  screen size — no hard-coded coordinates.
+
+  HOW TO SWAP IN A REAL SCREENSHOT FOR ANY STEP
+  Replace a step's `screen` with:
+      screen: () => `<img class="shot" data-spot src="screens/step-03.png" alt="">`
+  (put `data-spot` on whatever the callout should point to) and drop the PNG in
+  a sibling `screens/` folder.
+
+  DATA NOTE
+  Artifacts (extraction JSON, price summary, match scores, audit rows) reflect
+  the documented demo scenario + rehearsal script. Confirm numbers against your
+  actual recorded run before final submission.
+-->
+<style>
+  :root{
+    --green:#1e7a3d; --green-2:#2e9e51; --green-d:#14281d;
+    --amber:#f5a623; --amber-d:#b9770a;
+    --bg:#eef2ee; --panel:#ffffff; --ink:#1c2b22; --muted:#5d6f63;
+    --line:#d8e0d8; --sheet-green:#0f9d58; --n8n-bg:#1f2440; --n8n-panel:#2a3157;
+    --radius:14px; --shadow:0 10px 30px rgba(20,40,29,.12);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:var(--sans); color:var(--ink); background:
+      radial-gradient(1200px 600px at 80% -10%, #dff0e2 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, #e7f3ea 0%, transparent 55%),
+      var(--bg);
+    min-height:100%; display:flex; flex-direction:column;
+  }
+  .app{max-width:1080px;width:100%;margin:0 auto;padding:18px 18px 28px;flex:1;display:flex;flex-direction:column}
+
+  /* Header */
+  .top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.3px;font-size:18px}
+  .logo .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--green-2),var(--green));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow)}
+  .logo .mark svg{width:18px;height:18px}
+  .top .spacer{flex:1}
+  .pill{font-size:12px;font-weight:700;color:var(--green-d);background:#d6ecdb;border:1px solid #b9dcc2;padding:6px 11px;border-radius:999px}
+  .pill.amber{color:var(--amber-d);background:#fdeccc;border-color:#f4d79a}
+
+  /* Progress */
+  .progress{height:6px;background:#dce6dd;border-radius:99px;overflow:hidden;margin-bottom:14px}
+  .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green-2),var(--green));transition:width .35s cubic-bezier(.4,1.2,.4,1)}
+
+  /* Stage */
+  .stage-wrap{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;flex:1;min-height:460px}
+  .stage{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s;pointer-events:none}
+  .stage.active{opacity:1;transform:none;pointer-events:auto}
+
+  /* Window chrome shared by reconstructed screens */
+  .win{display:flex;flex-direction:column;height:100%}
+  .winbar{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--line);background:#f7faf7;font-size:12.5px;color:var(--muted);font-weight:600}
+  .winbar .dots{display:flex;gap:6px;margin-right:6px}
+  .winbar .dots i{width:10px;height:10px;border-radius:50%;background:#e0a3a0}
+  .winbar .dots i:nth-child(2){background:#f0c97a}.winbar .dots i:nth-child(3){background:#9ed2a6}
+  .winbar .url{margin-left:auto;font-family:var(--mono);font-size:11.5px;background:#eef3ee;border:1px solid var(--line);padding:3px 9px;border-radius:7px;color:#46594e;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .winbody{padding:18px 20px;overflow:auto;flex:1}
+  .tool-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;padding:4px 9px;border-radius:6px;margin-bottom:2px}
+  .tool-n8n{background:#eceaff;color:#5b4bd6}.tool-sheet{background:#e4f6ec;color:#0c7c45}
+  .tool-gmail{background:#fdeaea;color:#c5362f}.tool-form{background:#e7f0fb;color:#2a64bf}.tool-rag{background:#fff0db;color:#b9770a}
+
+  /* n8n-flavored panel */
+  .n8n{background:var(--n8n-bg);color:#dfe3ff}
+  .n8n .winbar{background:#262c4d;border-color:#343c66;color:#aab1e0}
+  .n8n .winbar .url{background:#1b2040;border-color:#343c66;color:#9aa2d6}
+  .n8n .winbody{background:linear-gradient(0deg,#1c2140,#22284b)}
+  .nodecard{background:var(--n8n-panel);border:1px solid #3a4170;border-radius:10px;padding:12px 14px;margin:0 0 12px}
+  .nodecard h4{margin:0 0 8px;font-size:13px;color:#cfd4ff;display:flex;align-items:center;gap:8px}
+  .nodecard h4 .ic{width:18px;height:18px;border-radius:5px;background:#5b4bd6;display:grid;place-items:center;color:#fff;font-size:11px}
+  .json{font-family:var(--mono);font-size:12.5px;line-height:1.7;white-space:pre;color:#cdd3ff;background:#171b35;border:1px solid #2c3360;border-radius:8px;padding:12px 14px;overflow:auto}
+  .json .k{color:#8ad0ff}.json .s{color:#9be8b0}.json .n{color:#ffcf8a}.json .b{color:#ff9ecb}
+  .flowline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{background:#2a3157;border:1px solid #3a4170;color:#c3c9f5;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px}
+  .chip .d{width:8px;height:8px;border-radius:50%;background:#6ee29a}
+  .chip.ai{border-color:#6253e0;background:#332c66;color:#d7d0ff}
+  .arrow{color:#6b73a8;font-weight:700}
+
+  /* Google-Sheets-flavored grid */
+  .sheet .winbar{background:#fff;border-bottom:1px solid #e3e8e3}
+  .tabs{display:flex;gap:2px;padding:0 12px;background:#f3f6f3;border-bottom:1px solid var(--line);overflow:auto}
+  .tabs button{border:0;background:transparent;padding:9px 13px;font-size:12.5px;font-weight:600;color:#5d6f63;border-bottom:2px solid transparent;cursor:default;white-space:nowrap}
+  .tabs button.on{color:var(--sheet-green);border-bottom-color:var(--sheet-green);background:#fff}
+  table.grid{border-collapse:collapse;width:100%;font-size:12.5px}
+  table.grid th{background:#0f9d58;color:#fff;text-align:left;padding:8px 10px;font-weight:700;position:sticky;top:0;white-space:nowrap}
+  table.grid td{border:1px solid #e6ece6;padding:7px 10px;color:#283b30;white-space:nowrap}
+  table.grid tr:nth-child(even) td{background:#f6faf6}
+  .cell-new{background:#fff7df !important;animation:flash 1.6s ease}
+  @keyframes flash{0%{background:#ffe9a6}100%{background:#fff7df}}
+  .tag{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;letter-spacing:.3px}
+  .t-pending{background:#fdeccc;color:#9a6206}.t-ok{background:#d8f0df;color:#1c7a3d}
+  .t-flag{background:#fbe0de;color:#b23029}.t-info{background:#e0ecfb;color:#2a5ca8}
+
+  /* Gmail-flavored */
+  .gmail .winbody{padding:0}
+  .mail{border-bottom:1px solid #eee;padding:14px 18px}
+  .mail .from{font-weight:700;font-size:13.5px;color:#202124}
+  .mail .subj{font-size:13px;color:#202124;margin:2px 0 6px}
+  .mail .body{font-size:12.5px;color:#3c4043;line-height:1.6;background:#f8faf8;border:1px solid #eef2ee;border-radius:8px;padding:12px}
+  .mail .meta{font-size:11px;color:#80868b;margin-top:6px}
+
+  /* Form-flavored */
+  .formscr .winbody{display:flex;justify-content:center}
+  .formcard{max-width:520px;width:100%;background:#fff;border:1px solid var(--line);border-top:6px solid var(--green);border-radius:12px;padding:22px 22px 18px;box-shadow:var(--shadow)}
+  .formcard h3{margin:0 0 4px;font-size:18px}
+  .formcard p.sub{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:12.5px;font-weight:700;margin-bottom:5px}
+  .field .req{color:#c5362f}
+  .field .inp{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;background:#fbfdfb;color:#26352c}
+  .field .chk{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#3c4a40}
+  .field .chk .box{width:16px;height:16px;border-radius:4px;background:var(--green);display:grid;place-items:center;color:#fff;font-size:11px}
+  .submit{background:var(--green);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:700;font-size:13px}
+
+  /* generic content for intro/outro */
+  .pad{padding:26px 30px;overflow:auto}
+  .pad h2{margin:.1em 0 .4em;font-size:23px;letter-spacing:-.4px}
+  .tool-frame{background:#e7efe8;color:#1e7a3d}
+  .frame{display:grid;gap:12px;margin-top:16px;max-width:780px}
+  .fblock{background:#f5f9f5;border:1px solid var(--line);border-left:4px solid var(--green);border-radius:10px;padding:13px 16px}
+  .fblock .flabel{display:block;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--green);margin-bottom:5px}
+  .fblock p{margin:0;font-size:13.5px;line-height:1.62;color:#33453a}
+  .tabsgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;max-width:680px}
+  .tabsgrid .b{background:#f5f9f5;border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .tabsgrid .b b{display:block;font-family:var(--mono);font-size:12.5px;color:var(--green-d)}
+  .tabsgrid .b span{font-size:12px;color:var(--muted)}
+  .shot{display:block;max-width:100%;height:auto;margin:auto}
+
+  /* Callout — positioned by JS relative to the [data-spot] element */
+  .callout{position:absolute;z-index:20;max-width:300px;background:var(--green-d);color:#eafaef;border-radius:12px;padding:13px 15px;box-shadow:0 14px 34px rgba(10,25,16,.34);font-size:13px;line-height:1.55}
+  .callout b{color:#fff}
+  .callout code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.12);padding:1px 5px;border-radius:5px;color:#dff7e6}
+  .callout .step-no{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.5px;color:#9be8b0;text-transform:uppercase;margin-bottom:4px}
+  .callout::after{content:"";position:absolute;width:14px;height:14px;background:var(--green-d);transform:rotate(45deg);left:var(--ax,24px)}
+  .callout.ar-up::after{top:-6px}
+  .callout.ar-down::after{bottom:-6px}
+  .callout.caption{max-width:620px}
+  .callout.caption::after{display:none}
+  /* spotlight ring */
+  .spot{position:absolute;z-index:15;display:none;border:3px solid var(--amber);border-radius:10px;pointer-events:auto;cursor:pointer;animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 4px rgba(245,166,35,.30)}70%{box-shadow:0 0 0 13px rgba(245,166,35,0)}100%{box-shadow:0 0 0 4px rgba(245,166,35,0)}}
+
+  /* Nav */
+  .nav{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 18px;border-radius:10px;font-weight:700;font-size:13.5px;cursor:pointer;transition:.15s}
+  .btn:hover{border-color:var(--green-2);color:var(--green)}
+  .btn[disabled]{opacity:.4;cursor:default}
+  .btn.primary{background:var(--green);color:#fff;border-color:var(--green)}
+  .btn.primary:hover{background:var(--green-2);color:#fff}
+  .dots{display:flex;gap:7px;flex:1;justify-content:center;flex-wrap:wrap}
+  .dots i{width:9px;height:9px;border-radius:50%;background:#cdd9ce;cursor:pointer;transition:.2s}
+  .dots i.on{background:var(--green);transform:scale(1.25)}
+  .hint{font-size:11.5px;color:var(--muted)}
+  .steplabel{font-size:13px;font-weight:700;color:var(--green-d)}
+
+  /* Start / End overlays */
+  .overlay{position:absolute;inset:0;z-index:40;background:linear-gradient(160deg,#14281d,#1e7a3d);color:#eafaef;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px;gap:14px}
+  .overlay h1{font-size:30px;margin:0;letter-spacing:-.6px}
+  .overlay p{max-width:60ch;line-height:1.65;color:#cdeed6;margin:0}
+  .overlay .go{background:#fff;color:var(--green-d);border:0;padding:13px 26px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;margin-top:6px;box-shadow:var(--shadow)}
+  .overlay .small{font-size:12px;color:#a9dab6}
+  .overlay.hide{display:none}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+  .badges span{font-size:11.5px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:5px 10px;border-radius:999px}
+
+  @media (max-width:680px){
+    .callout{max-width:240px;font-size:12px}
+    .tabsgrid{grid-template-columns:1fr}
+    .winbody{padding:12px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="logo">
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20c4-1 6-4 7-9M12 11c2-3 5-4 8-4-1 4-4 6-8 6M12 20V8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      FarmGateIQ
+    </div>
+    <span class="spacer"></span>
+    <span class="pill" id="toolPill">Walkthrough</span>
+    <span class="pill amber">Synthetic demo data</span>
+  </div>
+
+  <div class="progress"><i id="bar"></i></div>
+
+  <div class="stage-wrap" id="stageWrap">
+    <div class="overlay" id="startOverlay">
+      <h1>FarmGateIQ — Interactive Walkthrough</h1>
+      <p>From a farmer's free-text message to an approved buyer outreach — see the full agentic pipeline, step by step. Claude handles the language; a manager approves every outbound message; every step is logged.</p>
+      <div class="badges">
+        <span>n8n orchestration</span><span>Claude (Anthropic)</span><span>RAG · Pinecone</span><span>Google Sheets</span><span>Human-in-the-loop</span>
+      </div>
+      <button class="go" id="startBtn">Start the tour →</button>
+      <p class="small">Use ← → arrow keys, the buttons, or click the glowing element to advance.</p>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="btn" id="prevBtn">← Back</button>
+    <div class="dots" id="dots"></div>
+    <span class="steplabel" id="counter"></span>
+    <button class="btn primary" id="nextBtn">Next →</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+    <span class="hint" id="title2"></span>
+    <span class="spacer" style="flex:1"></span>
+    <span class="hint">Reconstructed from the project's real demo data · swap in screenshots anytime</span>
+  </div>
+</div>
+
+<script>
+/* ----------------------------------------------------------------------------
+   STEP DATA — each step: { tool, tag, title, screen():html, callout }
+   The key element inside each screen carries `data-spot`. The script measures
+   it and positions the highlight ring + callout automatically.
+---------------------------------------------------------------------------- */
+const STEPS = [
+  {
+    tool:'Introduction', tag:'tool-frame', title:'The 30-second frame',
+    screen: () => `
+      <div class="win">
+        <div class="winbody pad" style="padding-bottom:84px">
+          <span class="tool-tag tool-frame">The 30-second frame</span>
+          <h2 style="margin:6px 0 2px">From farmgate submission to approved buyer outreach</h2>
+          <p style="color:#5d6f63;font-size:13px;margin:0">A quick frame before the demo — what this is, and why it matters.</p>
+          <div class="frame">
+            <div class="fblock"><span class="flabel">What a cooperative does</span><p>An agricultural cooperative pools (aggregates) many smallholder farmers' produce and connects it to larger buyers, so members get better market access and prices than selling alone.</p></div>
+            <div class="fblock"><span class="flabel">Where automation fits</span><p>Coordinating this — collecting what each farmer has, checking prices, finding suitable buyers, following up — is repetitive, multi-step work. In many cooperatives much of it is still handled manually: notebooks, WhatsApp, spreadsheets. That's exactly the kind of process workflow automation is suited to.</p></div>
+            <div class="fblock"><span class="flabel">What this demo is</span><p>An <b>n8n</b> automation built around that realistic example — orchestrating the steps end to end, using <b>Claude</b> for the language tasks, and keeping a <b>manager approving every outbound message</b> — in a way that could be taken toward production.</p></div>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">The frame</span> This is the job a cooperative does by hand today. Next, you'll see that <b>same job, automated</b> — click <b>Next →</b>.`
+  },
+  {
+    tool:'Overview', tag:'tool-sheet', title:'The cooperative & the data',
+    screen: () => `
+      <div class="win sheet">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> FarmGateIQ Demo — Google Sheets
+          <span class="url">docs.google.com/…/FarmGateIQ-Demo</span></div>
+        <div class="tabs">
+          <button class="on">Overview</button><button>produce_lots</button><button>price_entries</button>
+          <button>buyers</button><button>buyer_matches</button><button>approvals</button>
+          <button>deal_records</button><button>audit_log</button>
+        </div>
+        <div class="winbody">
+          <span class="tool-tag tool-sheet">Workbook</span>
+          <h2 style="margin:6px 0 2px;font-size:20px">Kaduna Maize Farmers Cooperative</h2>
+          <p style="color:#5d6f63;font-size:13px;margin:0 0 12px">One workbook, eight tabs. Three are pre-seeded; the rest fill as the workflows run.</p>
+          <div class="tabsgrid" data-spot>
+            <div class="b"><b>produce_lots</b><span>20 seeded lots from members</span></div>
+            <div class="b"><b>price_entries</b><span>15 observed market prices</span></div>
+            <div class="b"><b>buyers</b><span>10 verified buyer profiles</span></div>
+            <div class="b"><b>buyer_matches</b><span>fills as matching runs</span></div>
+            <div class="b"><b>approvals</b><span>every AI draft awaiting sign-off</span></div>
+            <div class="b"><b>deal_records</b><span>active negotiations</span></div>
+            <div class="b"><b>audit_log</b><span>every AI action, end to end</span></div>
+            <div class="b"><b>Overview</b><span>live counts & pipeline</span></div>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">The setup</span> A cooperative pools many farmers' maize and connects it to bigger buyers. All of that coordination lives in <b>one Google Sheets workbook</b> — and we're about to automate the whole flow on top of it.`
+  },
+
+  {
+    tool:'WF-001 · Intake', tag:'tool-form', title:'A field officer logs a lot',
+    screen: () => `
+      <div class="win formscr">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> FarmGateIQ — Produce Lot Intake
+          <span class="url">farmgateiq.app.n8n.cloud/form/produce-intake</span></div>
+        <div class="winbody">
+          <div class="formcard">
+            <h3>Produce Lot Intake</h3>
+            <p class="sub">Submit what the farmer told you — free text is fine.</p>
+            <div class="field"><label>Member name <span class="req">*</span></label><div class="inp">Chidi Test</div></div>
+            <div class="field"><label>Free text submission</label>
+              <div class="inp" data-spot style="min-height:74px">I have 120 bags of dry maize in Zaria available from 15 June. Asking 48000 per bag.</div></div>
+            <div class="field"><div class="chk"><span class="box">✓</span> I have the member's consent to submit this information.</div></div>
+            <button class="submit">Submit</button>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 1 · Intake</span> The officer just types <b>what the farmer said</b> — no structured fields. Only the member name is required; everything else gets extracted by AI. Tick consent, submit.`
+  },
+
+  {
+    tool:'WF-001 · Extraction', tag:'tool-n8n', title:'Claude structures the message',
+    screen: () => `
+      <div class="win n8n">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> n8n — WF-001 Produce Lot Intake
+          <span class="url">Execution finished · 12.4s</span></div>
+        <div class="winbody">
+          <div class="flowline">
+            <span class="chip"><span class="d"></span>Form Trigger</span><span class="arrow">→</span>
+            <span class="chip"><span class="d"></span>Validate</span><span class="arrow">→</span>
+            <span class="chip ai">Claude · Extract</span><span class="arrow">→</span>
+            <span class="chip"><span class="d"></span>Assemble row</span><span class="arrow">→</span>
+            <span class="chip"><span class="d"></span>Append to Sheets</span>
+          </div>
+          <div class="nodecard">
+            <h4><span class="ic">{}</span> Assemble produce lot row — output</h4>
+            <div class="json" data-spot><span class="k">"commodity"</span>: <span class="s">"maize"</span>,
+<span class="k">"raw_commodity"</span>: <span class="s">"maize"</span>,
+<span class="k">"quantity"</span>: <span class="n">120</span>,
+<span class="k">"unit"</span>: <span class="s">"bag"</span>,            <span style="color:#6b73a8">// 100kg bag</span>
+<span class="k">"location"</span>: <span class="s">"Zaria, Kaduna"</span>,
+<span class="k">"availability_date"</span>: <span class="s">"2026-06-15"</span>,
+<span class="k">"asking_price"</span>: <span class="n">48000</span>,
+<span class="k">"asking_price_unit"</span>: <span class="s">"per bag"</span>,
+<span class="k">"quality_notes"</span>: <span class="s">"dry; moisture level not confirmed"</span>,
+<span class="k">"confidence"</span>: <span class="s">"medium"</span>,
+<span class="k">"needs_review"</span>: <span class="b">true</span></div>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 2 · AI extraction</span> Claude pulls <b>every structured field</b> from that one sentence — commodity normalized, quantity, unit, location, date, price. It also sets a <b>confidence score</b> and a <b>needs-review flag</b> (moisture wasn't confirmed).`
+  },
+
+  {
+    tool:'Google Sheets', tag:'tool-sheet', title:'Written to the database + logged',
+    screen: () => `
+      <div class="win sheet">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> FarmGateIQ Demo — Google Sheets</div>
+        <div class="tabs"><button>Overview</button><button class="on">produce_lots</button><button>price_entries</button><button>buyers</button><button>buyer_matches</button><button>approvals</button><button>deal_records</button><button>audit_log</button></div>
+        <div class="winbody" style="padding:0">
+          <table class="grid">
+            <tr><th>id</th><th>member_name</th><th>commodity</th><th>quantity</th><th>unit</th><th>location</th><th>asking_price</th><th>confidence</th><th>needs_review</th></tr>
+            <tr><td>lot_019</td><td>Hauwa B.</td><td>maize</td><td>90</td><td>bag</td><td>Giwa</td><td>46000</td><td>high</td><td>FALSE</td></tr>
+            <tr><td>lot_020</td><td>Sani M.</td><td>maize</td><td>150</td><td>bag</td><td>Sabon Gari</td><td>49000</td><td>high</td><td>FALSE</td></tr>
+            <tr data-spot><td class="cell-new">lot_2026-06-01-021</td><td class="cell-new">Chidi Test</td><td class="cell-new">maize</td><td class="cell-new">120</td><td class="cell-new">bag</td><td class="cell-new">Zaria, Kaduna</td><td class="cell-new">48000</td><td class="cell-new">medium</td><td class="cell-new">FALSE</td></tr>
+          </table>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 3 · Stored</span> A <b>new normalized row</b> lands in <code>produce_lots</code>, ready for matching — and the event is captured in <code>audit_log</code> (actor, input, output, timestamp). Every AI step writes there.`
+  },
+
+  {
+    tool:'WF-003 · Price RAG', tag:'tool-rag', title:'Price summary, grounded in real reports',
+    screen: () => `
+      <div class="win n8n">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> n8n — WF-003 Price Summary <span class="url">Pinecone · namespace: market_intel</span></div>
+        <div class="winbody">
+          <div class="flowline">
+            <span class="chip"><span class="d"></span>Read price_entries</span><span class="arrow">→</span>
+            <span class="chip"><span class="d"></span>Compute stats (code)</span><span class="arrow">→</span>
+            <span class="chip ai">Retrieve · Pinecone</span><span class="arrow">→</span>
+            <span class="chip ai">Claude · Summarize</span>
+          </div>
+          <div class="nodecard">
+            <h4><span class="ic">⌕</span> Retrieve market context — 4 passages</h4>
+            <div style="display:grid;gap:7px">
+              <div style="background:#171b35;border:1px solid #2c3360;border-radius:8px;padding:9px 11px;font-size:12px;color:#cdd3ff"><b style="color:#8ad0ff">FEWS NET / Saminaka (2024–2025)</b> — Kaduna maize ~₦50,000–₦55,000 per 100kg bag, down YoY…</div>
+              <div style="background:#171b35;border:1px solid #2c3360;border-radius:8px;padding:9px 11px;font-size:12px;color:#cdd3ff"><b style="color:#8ad0ff">NBS retail trend</b> — white maize ₦889/kg → ₦785/kg, falling year-on-year…</div>
+              <div style="background:#171b35;border:1px solid #2c3360;border-radius:8px;padding:9px 11px;font-size:12px;color:#cdd3ff"><b style="color:#8ad0ff">FAO / FEWS outlook</b> — import waiver + naira gains eased prices; lean-season upside…</div>
+            </div>
+          </div>
+          <div class="nodecard" data-spot style="border-color:#5b6a3a;background:#2b3322">
+            <h4 style="color:#dff0c8"><span class="ic" style="background:#6e9e3a">✦</span> Generated summary (in approvals · pending)</h4>
+            <p style="margin:0;font-size:13px;line-height:1.65;color:#e7f3d8">Across 13 recent entries, the cooperative's own records show <b>₦44,000–₦52,000 per 100kg bag (median ₦47,000)</b>. For context, public reports put Kaduna farmgate maize around <b>₦50,000–₦55,000/bag</b> recently (<i>FEWS NET / Saminaka</i>), easing year-on-year (<i>NBS</i>). Two entries — ₦30,000 and ₦70,000 — were flagged as outliers and excluded. The ₦48,000 ask sits within range. <b>Confidence: medium.</b></p>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 4 · Price intelligence (RAG)</span> The cooperative's own min/max/median are computed <b>in code</b> — never by the AI. RAG only adds <b>cited context</b> retrieved from public market reports, and must attribute each figure. If nothing relevant retrieves, it says so.`
+  },
+
+  {
+    tool:'WF-005 · Matching', tag:'tool-sheet', title:'Buyers matched & ranked',
+    screen: () => `
+      <div class="win sheet">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> FarmGateIQ Demo — Google Sheets</div>
+        <div class="tabs"><button>Overview</button><button>produce_lots</button><button>buyers</button><button class="on">buyer_matches</button><button>approvals</button><button>deal_records</button><button>audit_log</button></div>
+        <div class="winbody" style="padding:0">
+          <table class="grid">
+            <tr><th>rank</th><th>buyer</th><th>score</th><th>trust</th><th>fit (loc/qty/qual)</th><th>risk_flags</th></tr>
+            <tr data-spot><td>1</td><td>KadFeed Processing Ltd</td><td><b>87</b></td><td><span class="tag t-ok">preferred</span></td><td>1.0 / 1.0 / 0.6</td><td>—</td></tr>
+            <tr><td>2</td><td>Northern Grain Aggregators</td><td>74</td><td><span class="tag t-info">verified</span></td><td>0.7 / 1.0 / 0.6</td><td><span class="tag t-flag">location not exact</span></td></tr>
+            <tr><td>3</td><td>FeedMill Connect Ltd</td><td>61</td><td><span class="tag t-flag">unverified</span></td><td>1.0 / 0.5 / 1.0</td><td><span class="tag t-flag">confirm identity</span></td></tr>
+          </table>
+          <div style="padding:14px 16px">
+            <span class="tool-tag tool-sheet">approvals · buyer_outreach (pending)</span>
+            <div class="mail" style="border:1px solid #eef2ee;border-radius:10px;margin-top:8px">
+              <div class="body">Hello Emeka,<br>The Kaduna Maize Farmers Cooperative has <b>120 bags (100kg) of dry maize</b> in Zaria from 15 June 2026, asking ₦48,000/bag. This fits your stated preference for <b>dry, low-moisture bagged</b> maize and your <b>Kaduna/Zaria</b> coverage, and 120 bags sits within your <b>50–300 bag</b> range. Moisture isn't yet confirmed — we can follow up. Interested? This offer is subject to confirmation.</div>
+              <div class="meta">decision: <span class="tag t-pending">pending</span> · nothing sent yet</div>
+            </div>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 5 · Matching</span> The <b>score is a fixed 6-factor formula in code</b> — Claude explains it, never decides it. Blocked buyers are filtered out; unverified ones pass but get <b>risk flags</b>. The draft references each buyer's <b>actual stated requirements</b>.`
+  },
+
+  {
+    tool:'Gmail', tag:'tool-gmail', title:'The manager is notified',
+    screen: () => `
+      <div class="win gmail">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> Inbox — fisayo.dmg@gmail.com</div>
+        <div class="winbody">
+          <div class="mail" data-spot>
+            <div class="from">FarmGateIQ &lt;automation&gt;</div>
+            <div class="subj">🟡 Buyer matches ready for lot_001 — approval needed</div>
+            <div class="body"><b>3 matches found.</b> Top: KadFeed Processing Ltd (score 87, preferred).<br>
+            ⚠ Northern Grain — location not exact. ⚠ FeedMill — unverified, confirm identity.<br><br>
+            <b>Drafted outreach</b> for KadFeed is attached below and is <b>pending your approval</b>. Nothing has been sent.<br>
+            → Review &amp; decide in the approval form.</div>
+            <div class="meta">to manager_amina · just now</div>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 6 · Notify</span> Before anything goes anywhere, the manager gets <b>one email</b>: ranked matches, risk flags, and the draft. The AI has prepared everything — but the human still holds the gate.`
+  },
+
+  {
+    tool:'WF-006 · Approval', tag:'tool-sheet', title:'Manager approves — then it sends',
+    screen: () => `
+      <div class="win sheet">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> FarmGateIQ Demo — Google Sheets</div>
+        <div class="tabs"><button>Overview</button><button class="on">approvals</button><button>deal_records</button><button>audit_log</button></div>
+        <div class="winbody" style="padding:0">
+          <table class="grid">
+            <tr><th>id</th><th>type</th><th>decision</th><th>approved_by</th><th>decided_at</th></tr>
+            <tr data-spot><td class="cell-new">appr_77c2</td><td class="cell-new">buyer_outreach</td><td class="cell-new"><span class="tag t-ok">approved</span></td><td class="cell-new">manager_amina</td><td class="cell-new">2026-06-01 11:18</td></tr>
+          </table>
+          <div style="padding:12px 16px;display:grid;gap:10px">
+            <div><span class="tool-tag tool-sheet">deal_records (new)</span>
+              <table class="grid" style="margin-top:6px"><tr><th>buyer</th><th>lot</th><th>quoted</th><th>status</th><th>next_action</th></tr>
+              <tr><td class="cell-new">KadFeed Processing Ltd</td><td class="cell-new">lot_001</td><td class="cell-new">₦48,000/bag</td><td class="cell-new"><span class="tag t-info">contacted</span></td><td class="cell-new">await buyer response</td></tr></table></div>
+            <div class="mail" style="border:1px solid #eef2ee;border-radius:10px">
+              <div class="from">✉ Simulated outreach sent</div>
+              <div class="meta">To manager inbox (buyer shown in body). In a pilot this becomes the buyer's real address.</div>
+            </div>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 7 · Approve & send</span> <b>Nothing leaves the system without this step.</b> On approve, the row updates in place (keeping the original draft as history), a <b>deal record</b> is created, and the (simulated) email goes out.`
+  },
+
+  {
+    tool:'WF-007 · Response', tag:'tool-n8n', title:'The buyer replies — auto-classified',
+    screen: () => `
+      <div class="win n8n">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> n8n — WF-007 Buyer Response</div>
+        <div class="winbody">
+          <div class="nodecard">
+            <h4><span class="ic">“”</span> Buyer reply (logged by field officer)</h4>
+            <p style="margin:0;color:#cdd3ff;font-size:13px;line-height:1.6">"Yes we are interested in the maize lot. Can we arrange an inspection on June 18 at Zaria? Please confirm the exact location and who to contact."</p>
+          </div>
+          <div class="flowline"><span class="chip ai">Claude · Classify</span><span class="arrow">→</span><span class="chip"><span class="d"></span>Update deal_records</span><span class="arrow">→</span><span class="chip"><span class="d"></span>Notify manager</span></div>
+          <div class="nodecard" data-spot style="border-color:#5b6a3a;background:#2b3322">
+            <h4 style="color:#dff0c8"><span class="ic" style="background:#6e9e3a">✓</span> Classification</h4>
+            <p style="margin:0;color:#e7f3d8;font-size:13px">Status → <b>interested</b> · recommended next action: <b>confirm inspection June 18, share pickup location</b>. <span style="color:#b6c79f">No reply sent to the buyer — any buyer reply goes back through approval first.</span></p>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 8 · Response</span> Claude classifies the reply (<b>interested</b>) and advances the deal, logging a recommended next action. Suspicious replies get flagged and <b>do not</b> advance. The human stays in control of every outbound reply.`
+  },
+
+  {
+    tool:'audit_log', tag:'tool-sheet', title:'The full, traceable chain',
+    screen: () => `
+      <div class="win sheet">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> FarmGateIQ Demo — Google Sheets</div>
+        <div class="tabs"><button>Overview</button><button>approvals</button><button>deal_records</button><button class="on">audit_log</button></div>
+        <div class="winbody" style="padding:0">
+          <table class="grid">
+            <tr><th>time</th><th>event</th><th>actor</th><th>entity</th><th>summary</th><th>conf.</th></tr>
+            <tr data-spot><td>11:04</td><td>submission</td><td>field_officer</td><td>produce_lot</td><td>120 bags maize, Zaria</td><td>—</td></tr>
+            <tr><td>11:04</td><td>llm_output</td><td>system</td><td>produce_lot</td><td>extraction</td><td>medium</td></tr>
+            <tr><td>11:09</td><td>llm_output</td><td>system</td><td>price_summary</td><td>range+cited context</td><td>medium</td></tr>
+            <tr><td>11:14</td><td>llm_output</td><td>system</td><td>buyer_match</td><td>score 87, KadFeed</td><td>—</td></tr>
+            <tr><td>11:14</td><td>llm_output</td><td>system</td><td>outreach_draft</td><td>draft generated</td><td>—</td></tr>
+            <tr><td>11:18</td><td>approval</td><td>manager_amina</td><td>outreach</td><td>approved</td><td>—</td></tr>
+            <tr><td>11:18</td><td>message_sent</td><td>system</td><td>deal_record</td><td>email → KadFeed</td><td>—</td></tr>
+            <tr><td>11:31</td><td>llm_output</td><td>system</td><td>deal_record</td><td>reply: interested</td><td>high</td></tr>
+          </table>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 9 · Auditability</span> Every action in the run is here — actor, input, output, confidence, timestamp, prompt version. Anyone can open it and trace <b>exactly what the AI recommended, why, and who approved it.</b>`
+  },
+
+  {
+    tool:'Safeguard', tag:'tool-form', title:'A bad submission → intelligent triage',
+    screen: () => `
+      <div class="win sheet">
+        <div class="winbar"><span class="dots"><i></i><i></i><i></i></span> FarmGateIQ Demo — Google Sheets</div>
+        <div class="tabs"><button>Overview</button><button class="on">produce_lots</button><button>audit_log</button></div>
+        <div class="winbody" style="padding:0">
+          <div style="padding:12px 16px"><span class="tool-tag tool-form">Input</span>
+            <span style="display:inline-block;margin-left:8px;border:1px solid #e6ece6;border-radius:8px;padding:7px 11px;font-size:13px;color:#283b30;background:#fbfdfb">"50 bags corn, good quality, call me"</span></div>
+          <table class="grid">
+            <tr><th>id</th><th>commodity</th><th>quantity</th><th>location</th><th>date</th><th>price</th><th>confidence</th><th>needs_review</th></tr>
+            <tr data-spot><td class="cell-new">lot_…022</td><td class="cell-new">maize</td><td class="cell-new">50</td><td class="cell-new" style="color:#b23029">—</td><td class="cell-new" style="color:#b23029">—</td><td class="cell-new" style="color:#b23029">—</td><td class="cell-new"><span class="tag t-flag">low</span></td><td class="cell-new"><span class="tag t-flag">TRUE</span></td></tr>
+          </table>
+          <div style="padding:12px 16px">
+            <div class="mail" style="border:1px solid #eef2ee;border-radius:10px">
+              <div class="from">🟠 Needs-review notification → manager</div>
+              <div class="body">Lot stored but <b>incomplete</b>: missing location, date, price. <b>Held out of the matching pipeline</b> until a field officer follows up. Not a hard block — intelligent triage.</div>
+            </div>
+          </div>
+        </div>
+      </div>`,
+    callout:`<span class="step-no">Step 10 · Failure case</span> A vague message isn't rejected — it's <b>extracted as far as possible, flagged low-confidence, and held back from matching</b>. The manager gets a needs-review alert. Safeguards that degrade gracefully.`
+  }
+];
+
+/* ---------------------------- render + nav ------------------------------- */
+const wrap = document.getElementById('stageWrap');
+const bar = document.getElementById('bar');
+const dotsEl = document.getElementById('dots');
+const counter = document.getElementById('counter');
+const title2 = document.getElementById('title2');
+const toolPill = document.getElementById('toolPill');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+let i = 0, started = false;
+
+STEPS.forEach((s, idx) => {
+  const st = document.createElement('div');
+  st.className = 'stage'; st.dataset.idx = idx;
+  st.innerHTML = s.screen() + `<div class="spot"></div><div class="callout">${s.callout}</div>`;
+  wrap.appendChild(st);
+  st.querySelector('.spot').addEventListener('click', () => go(i + 1));
+  const d = document.createElement('i'); d.dataset.idx = idx;
+  d.onclick = () => { if (started) go(idx); };
+  dotsEl.appendChild(d);
+});
+
+const endOverlay = document.createElement('div');
+endOverlay.className = 'overlay hide'; endOverlay.id = 'endOverlay';
+endOverlay.innerHTML = `
+  <h1>The AI assists. The human decides.</h1>
+  <p>Every number came from the cooperative's own data. No buyer was contacted without the manager's approval. And every step is in the audit log — that's the safeguard story, end to end.</p>
+  <div class="badges"><span>9 workflows</span><span>RAG-grounded pricing</span><span>100% approval-gated outbound</span><span>Full audit trail</span></div>
+  <button class="go" id="restartBtn">↺ Watch again</button>
+  <p class="small">FarmGateIQ — cooperative farmgate price intelligence &amp; buyer matching.</p>`;
+wrap.appendChild(endOverlay);
+
+/* Measure the active step's [data-spot] target and place ring + callout. */
+function positionCallout(stage){
+  const callout = stage.querySelector('.callout');
+  const spot = stage.querySelector('.spot');
+  const target = stage.querySelector('[data-spot]');
+  const wrapRect = wrap.getBoundingClientRect();
+
+  if(!target){
+    spot.style.display = 'none';
+    callout.className = 'callout caption';
+    callout.style.left = '50%'; callout.style.top = 'auto';
+    callout.style.bottom = '16px'; callout.style.transform = 'translateX(-50%)';
+    return;
+  }
+  callout.style.transform = 'none';
+
+  // Make sure the target is visible within its scroll container before measuring.
+  const sc = target.closest('.winbody');
+  if(sc){
+    const tr = target.getBoundingClientRect(), sr = sc.getBoundingClientRect();
+    if(tr.top < sr.top + 4) sc.scrollTop += (tr.top - sr.top) - 12;
+    else if(tr.bottom > sr.bottom - 4) sc.scrollTop += (tr.bottom - sr.bottom) + 12;
+  }
+
+  const r = target.getBoundingClientRect();
+  const t = r.top - wrapRect.top, l = r.left - wrapRect.left;
+  const W = wrapRect.width, H = wrapRect.height;
+
+  // Highlight ring
+  spot.style.display = 'block';
+  spot.style.top = (t - 5) + 'px'; spot.style.left = (Math.max(2, l - 5)) + 'px';
+  spot.style.width = Math.min(r.width + 10, W - 6) + 'px';
+  spot.style.height = (r.height + 10) + 'px';
+
+  // Measure callout, then place it below the target (flip above if it won't fit)
+  callout.className = 'callout';
+  callout.style.left = '0px'; callout.style.top = '0px'; callout.style.bottom = 'auto';
+  const cw = callout.offsetWidth, ch = callout.offsetHeight;
+  const targetCx = l + r.width / 2;
+  const placeBelow = (t + r.height + 14 + ch) <= (H - 8);
+  let ct = placeBelow ? (t + r.height + 14) : (t - ch - 14);
+  ct = Math.max(8, Math.min(ct, H - ch - 8));
+  let cl = Math.max(10, Math.min(targetCx - cw / 2, W - cw - 10));
+
+  callout.classList.add(placeBelow ? 'ar-up' : 'ar-down');
+  callout.style.left = cl + 'px';
+  callout.style.top = ct + 'px';
+  const ax = Math.max(14, Math.min(targetCx - cl - 7, cw - 28));
+  callout.style.setProperty('--ax', ax + 'px');
+}
+
+function render(){
+  document.querySelectorAll('.stage').forEach(el => el.classList.toggle('active', +el.dataset.idx === i));
+  document.querySelectorAll('.dots i').forEach(el => el.classList.toggle('on', +el.dataset.idx === i));
+  bar.style.width = ((i + 1) / STEPS.length * 100) + '%';
+  counter.textContent = `Step ${i + 1} of ${STEPS.length}`;
+  title2.textContent = STEPS[i].title;
+  toolPill.textContent = STEPS[i].tool;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = false;
+  nextBtn.textContent = i === STEPS.length - 1 ? 'Finish ✓' : 'Next →';
+  endOverlay.classList.add('hide');
+  const active = document.querySelector('.stage.active');
+  if(active) requestAnimationFrame(() => positionCallout(active));
+}
+function go(n){
+  if(!started || n < 0) return;
+  if(n >= STEPS.length){ endOverlay.classList.remove('hide'); bar.style.width = '100%'; counter.textContent = 'Complete'; return; }
+  i = n; render();
+}
+function start(){
+  started = true;
+  document.getElementById('startOverlay').classList.add('hide');
+  i = 0; render();
+}
+
+// Nav is inert until the tour starts (the start overlay covers the stage).
+prevBtn.disabled = true; nextBtn.disabled = true;
+counter.textContent = 'Press Start';
+document.getElementById('startBtn').onclick = start;
+document.getElementById('restartBtn').onclick = start;
+prevBtn.onclick = () => go(i - 1);
+nextBtn.onclick = () => go(i + 1);
+window.addEventListener('resize', () => { const a = document.querySelector('.stage.active'); if(a && started) positionCallout(a); });
+document.addEventListener('keydown', e => {
+  if(!started){ if(e.key === 'Enter' || e.key === ' '){ start(); e.preventDefault(); } return; }
+  if(e.key === 'ArrowRight' || e.key === ' '){ go(i + 1); e.preventDefault(); }
+  if(e.key === 'ArrowLeft'){ go(i - 1); }
+});
+</script>
+</body>
+</html>

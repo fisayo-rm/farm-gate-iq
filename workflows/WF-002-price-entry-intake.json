@@ -1,0 +1,415 @@
+{
+  "name": "WF-002 Price Entry Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "FarmGateIQ — Price Entry",
+        "formDescription": "Record an observed maize price from a market, buyer quote, or report. Privacy: this form is for market price data only — do not enter any personal contact details here.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Commodity",
+              "placeholder": "e.g. maize",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Market / location",
+              "placeholder": "e.g. Kaduna Central Market",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Price",
+              "fieldType": "number",
+              "placeholder": "e.g. 48000",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Price unit",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "per bag" },
+                  { "option": "per kg" },
+                  { "option": "per tonne" }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Source type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "manual" },
+                  { "option": "buyer_quote" },
+                  { "option": "public_report" },
+                  { "option": "sample" }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Source name",
+              "placeholder": "e.g. Kaduna Central Market, KadFeed Processing Ltd",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Observed date",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Entered by",
+              "placeholder": "e.g. field_officer_001"
+            },
+            {
+              "fieldLabel": "Confidence",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "low" },
+                  { "option": "medium" },
+                  { "option": "high" }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1f0c2d3-1111-4a2b-9c01-100000000001",
+      "name": "On price entry submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -1600,
+        400
+      ],
+      "webhookId": "c9b1e4a2-2f31-4d6a-8b77-aa0102030405"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst item = items[0].json;\n\nconst errors = [];\nif (!item['Commodity'] || String(item['Commodity']).trim() === '') errors.push('Commodity');\nif (!item['Market / location'] || String(item['Market / location']).trim() === '') errors.push('Market / location');\nconst price = parseFloat(item['Price']);\nif (!price || isNaN(price) || price <= 0) errors.push('Price (must be a positive number)');\nif (!item['Source type'] || String(item['Source type']).trim() === '') errors.push('Source type');\nif (!item['Source name'] || String(item['Source name']).trim() === '') errors.push('Source name');\nif (!item['Observed date'] || String(item['Observed date']).trim() === '') errors.push('Observed date');\n\nif (errors.length) {\n  throw new Error('Missing or invalid required fields: ' + errors.join(', '));\n}\n\nconst commodityLookup = { corn: 'maize', masara: 'maize', 'yellow maize': 'maize', 'white maize': 'maize' };\nconst rawCommodity = String(item['Commodity']).toLowerCase().trim();\nconst commodity = commodityLookup[rawCommodity] || rawCommodity;\n\nreturn [{ json: Object.assign({}, item, {\n  norm_commodity: commodity,\n  norm_price: price,\n  norm_entered_by: (item['Entered by'] && String(item['Entered by']).trim()) ? String(item['Entered by']).trim() : 'field_officer_001'\n}) }];"
+      },
+      "id": "a1f0c2d3-2222-4a2b-9c01-100000000002",
+      "name": "Validate price entry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1312,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wf002-ef-01",
+              "name": "id",
+              "value": "={{ \"price_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-02",
+              "name": "commodity",
+              "value": "={{ $json.norm_commodity }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-03",
+              "name": "location",
+              "value": "={{ $json['Market / location'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-04",
+              "name": "price",
+              "value": "={{ $json.norm_price }}",
+              "type": "number"
+            },
+            {
+              "id": "wf002-ef-05",
+              "name": "price_unit",
+              "value": "={{ $json['Price unit'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-06",
+              "name": "source_type",
+              "value": "={{ $json['Source type'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-07",
+              "name": "source_name",
+              "value": "={{ $json['Source name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-08",
+              "name": "observed_date",
+              "value": "={{ $json['Observed date'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-09",
+              "name": "entered_by",
+              "value": "={{ $json.norm_entered_by }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-10",
+              "name": "confidence",
+              "value": "={{ $json['Confidence'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-ef-11",
+              "name": "prototype_data",
+              "value": "TRUE",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1f0c2d3-3333-4a2b-9c01-100000000003",
+      "name": "Assemble price entry row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1024,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "price_entries",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "commodity", "displayName": "commodity", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "location", "displayName": "location", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "price", "displayName": "price", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "price_unit", "displayName": "price_unit", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "source_type", "displayName": "source_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "source_name", "displayName": "source_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "observed_date", "displayName": "observed_date", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "entered_by", "displayName": "entered_by", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "confidence", "displayName": "confidence", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "prototype_data", "displayName": "prototype_data", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a1f0c2d3-4444-4a2b-9c01-100000000004",
+      "name": "Append to price_entries",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -736,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wf002-al-01",
+              "name": "id",
+              "value": "={{ \"audit_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-al-02",
+              "name": "event_type",
+              "value": "submission",
+              "type": "string"
+            },
+            {
+              "id": "wf002-al-03",
+              "name": "actor",
+              "value": "={{ $('Assemble price entry row').all()[0].json.entered_by }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-al-04",
+              "name": "entity_type",
+              "value": "price_entry",
+              "type": "string"
+            },
+            {
+              "id": "wf002-al-05",
+              "name": "entity_id",
+              "value": "={{ $('Assemble price entry row').all()[0].json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-al-06",
+              "name": "input_summary",
+              "value": "={{ $('Assemble price entry row').all()[0].json.commodity + ' @ ' + $('Assemble price entry row').all()[0].json.location + ' = NGN ' + $('Assemble price entry row').all()[0].json.price + ' ' + $('Assemble price entry row').all()[0].json.price_unit }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-al-07",
+              "name": "output_summary",
+              "value": "={{ 'source: ' + $('Assemble price entry row').all()[0].json.source_type + ' / ' + $('Assemble price entry row').all()[0].json.source_name + ' | confidence: ' + $('Assemble price entry row').all()[0].json.confidence }}",
+              "type": "string"
+            },
+            {
+              "id": "wf002-al-08",
+              "name": "prompt_version",
+              "value": "n/a",
+              "type": "string"
+            },
+            {
+              "id": "wf002-al-09",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1f0c2d3-5555-4a2b-9c01-100000000005",
+      "name": "Prepare audit log row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "audit_log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "event_type", "displayName": "event_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "actor", "displayName": "actor", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "entity_type", "displayName": "entity_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "entity_id", "displayName": "entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "input_summary", "displayName": "input_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "output_summary", "displayName": "output_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "prompt_version", "displayName": "prompt_version", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "timestamp", "displayName": "timestamp", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a1f0c2d3-6666-4a2b-9c01-100000000006",
+      "name": "Append to audit_log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -160,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On price entry submission": {
+      "main": [
+        [
+          { "node": "Validate price entry", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Validate price entry": {
+      "main": [
+        [
+          { "node": "Assemble price entry row", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Assemble price entry row": {
+      "main": [
+        [
+          { "node": "Append to price_entries", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Append to price_entries": {
+      "main": [
+        [
+          { "node": "Prepare audit log row", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Prepare audit log row": {
+      "main": [
+        [
+          { "node": "Append to audit_log", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "wf002-0000-0000-0000-000000000001",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+  },
+  "id": "wf002PriceEntryIntake",
+  "tags": []
+}

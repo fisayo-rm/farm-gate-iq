@@ -1,0 +1,308 @@
+{
+  "name": "WF-009 Market Intel Indexing",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d94ed852-666d-403b-8f97-e28a7c2e174b",
+      "name": "Run indexing",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1V4Z0Bv_Otlo1iciqakgr5TdDnwZ2Bxn5",
+            "mode": "list",
+            "cachedResultName": "farmgate-market_intel",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1V4Z0Bv_Otlo1iciqakgr5TdDnwZ2Bxn5"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {}
+      },
+      "id": "6f188472-f250-4e0d-ad86-fd6b22f88a46",
+      "name": "List market_intel files",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        288,
+        0
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "bk4Wc3u56mfbUMie",
+          "name": "FarmGateIQ Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "915df66c-68c0-4bb2-be3d-00da9d6fff59",
+      "name": "Download file",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        560,
+        0
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "bk4Wc3u56mfbUMie",
+          "name": "FarmGateIQ Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "df8304de-a041-46d2-92da-13a98282cea0",
+      "name": "Extract markdown text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        848,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse YAML-ish front-matter from each brief into fields + body.\nconst items = $input.all();\nreturn items.map((it) => {\n  const raw = String(it.json.data || it.json.text || it.json.content || '');\n  let meta = {};\n  let body = raw;\n  const m = raw.match(/^---\\s*\\n([\\s\\S]*?)\\n---\\s*\\n?([\\s\\S]*)$/);\n  if (m) {\n    body = m[2].trim();\n    m[1].split('\\n').forEach((line) => {\n      const i = line.indexOf(':');\n      if (i > -1) {\n        const k = line.slice(0, i).trim();\n        const v = line.slice(i + 1).trim();\n        if (k) meta[k] = v;\n      }\n    });\n  }\n  const fileName = $('Download file').first().json.name;\n  return { json: {\n    text: body,\n    commodity: String(meta.commodity || '').toLowerCase(),\n    region: String(meta.region || '').toLowerCase(),\n    period: meta.period || '',\n    source: meta.source || '',\n    doc_type: meta.doc_type || '',\n    unit: meta.unit || '',\n    file: fileName\n  }};\n});"
+      },
+      "id": "92b91705-f5c8-4749-b346-ef4fdf4226ee",
+      "name": "Parse front-matter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "farmgateiq-market-intel",
+          "mode": "list",
+          "cachedResultName": "farmgateiq-market-intel"
+        },
+        "options": {
+          "pineconeNamespace": "market_intel"
+        }
+      },
+      "id": "dca0aa29-1d00-4ae1-8927-8487a6ab73d5",
+      "name": "Pinecone — insert market intel",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        0
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "3OGW85ZZOkPv0zG8",
+          "name": "FarmGateIQ Pinecone"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "dca9c526-53a9-4258-b2fc-e30e9c66f8ed",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        224
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "0UL419sw5uZkY2pZ",
+          "name": "FarmGateIQ OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "commodity",
+                "value": "={{ $json.commodity }}"
+              },
+              {
+                "name": "region",
+                "value": "={{ $json.region }}"
+              },
+              {
+                "name": "period",
+                "value": "={{ $json.period }}"
+              },
+              {
+                "name": "source",
+                "value": "={{ $json.source }}"
+              },
+              {
+                "name": "doc_type",
+                "value": "={{ $json.doc_type }}"
+              },
+              {
+                "name": "file",
+                "value": "={{ $json.file }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "aba34f7a-5a60-4476-a37f-b93d927f910f",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 800,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "id": "06646444-d4e0-4a11-9f33-143280557fd3",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        432
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run indexing": {
+      "main": [
+        [
+          {
+            "node": "List market_intel files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List market_intel files": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract markdown text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract markdown text": {
+      "main": [
+        [
+          {
+            "node": "Parse front-matter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse front-matter": {
+      "main": [
+        [
+          {
+            "node": "Pinecone — insert market intel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone — insert market intel",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone — insert market intel",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1219e148-cc74-461e-abc7-13dff87ed9cc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+  },
+  "id": "oKlztqok5szdLgkz",
+  "tags": []
+}

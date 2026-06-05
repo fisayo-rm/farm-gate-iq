@@ -1,0 +1,528 @@
+{
+  "name": "WF-006 Approval and Send",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "FarmGateIQ — Process Approval",
+        "formDescription": "Act on a pending approval. Copy the approval ID from the approvals tab. Nothing is sent unless you approve or edit-and-approve.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Approval ID",
+              "placeholder": "e.g. appr_2026-05-29T...",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Decision",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "approve" },
+                  { "option": "edit_and_approve" },
+                  { "option": "reject" },
+                  { "option": "request_buyer_verification" },
+                  { "option": "request_farmer_confirmation" }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Edited message",
+              "fieldType": "textarea",
+              "placeholder": "Only needed for edit_and_approve — the final message that will be sent."
+            },
+            {
+              "fieldLabel": "Reason",
+              "fieldType": "textarea",
+              "placeholder": "Required for reject. Optional otherwise."
+            },
+            {
+              "fieldLabel": "Approver name",
+              "placeholder": "e.g. manager_amina"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6a10001-1111-4f60-9a05-500000000001",
+      "name": "Process approval",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -2200,
+        420
+      ],
+      "webhookId": "c0d1e2f3-6d72-4b0e-9fbb-ff0102030410"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "approvals",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "f6a10002-2222-4f60-9a05-500000000002",
+      "name": "Read approvals",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1920,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const approvalId = String($('Process approval').all()[0].json['Approval ID'] || '').trim();\nif (!approvalId) {\n  throw new Error('Please provide an Approval ID.');\n}\nconst rows = $('Read approvals').all().map(i => i.json);\nconst approval = rows.find(r => String(r.id).trim() === approvalId);\nif (!approval) {\n  throw new Error('Approval ID not found: ' + approvalId);\n}\nif (String(approval.decision || '').trim().toLowerCase() !== 'pending') {\n  throw new Error('Approval ' + approvalId + ' is already decided (' + approval.decision + '). Refusing to process again.');\n}\nreturn [{ json: approval }];"
+      },
+      "id": "f6a10003-3333-4f60-9a05-500000000003",
+      "name": "Find approval",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1640,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "buyer_matches",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "f6a10004-4444-4f60-9a05-500000000004",
+      "name": "Read buyer_matches",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1360,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const form = $('Process approval').all()[0].json;\nconst approval = $('Find approval').all()[0].json;\nconst matches = $('Read buyer_matches').all().map(i => i.json);\n\nconst decisionInput = String(form['Decision'] || '').trim();\nconst editedMsg = String(form['Edited message'] || '').trim();\nconst reasonInput = String(form['Reason'] || '').trim();\nconst approver = String(form['Approver name'] || '').trim() || 'manager_amina';\nconst ts = $now.toISO();\n\nconst original = String(approval.original_content || '');\nconst approvalType = String(approval.approval_type || '');\nconst isOutreach = approvalType === 'buyer_outreach';\n\nlet new_decision, send, final_content, reason;\nswitch (decisionInput) {\n  case 'approve':\n    new_decision = 'approved'; send = true; final_content = original; reason = reasonInput; break;\n  case 'edit_and_approve':\n    if (!editedMsg) throw new Error('Edited message is required for edit_and_approve.');\n    new_decision = 'edited'; send = true; final_content = editedMsg; reason = reasonInput; break;\n  case 'reject':\n    if (!reasonInput) throw new Error('A reason is required to reject.');\n    new_decision = 'rejected'; send = false; final_content = ''; reason = reasonInput; break;\n  case 'request_buyer_verification':\n    new_decision = 'needs_verification'; send = false; final_content = ''; reason = reasonInput || 'Buyer verification requested before outreach'; break;\n  case 'request_farmer_confirmation':\n    new_decision = 'needs_verification'; send = false; final_content = ''; reason = reasonInput || 'Farmer confirmation requested'; break;\n  default:\n    throw new Error('Unknown decision: ' + decisionInput);\n}\n\nlet produce_lot_id = '', buyer_id = '', deal_id = '';\nif (isOutreach) {\n  const match = matches.find(m => String(m.id).trim() === String(approval.related_entity_id).trim());\n  if (match) {\n    produce_lot_id = match.produce_lot_id || '';\n    buyer_id = match.buyer_id || '';\n    deal_id = 'deal_' + produce_lot_id + '_' + buyer_id;\n  } else {\n    deal_id = 'deal_' + (approval.related_entity_id || 'unknown');\n  }\n}\n\nconst send_subject = isOutreach\n  ? ('FarmGateIQ — Approved outreach re: lot ' + produce_lot_id + ' (buyer ' + buyer_id + ')')\n  : 'FarmGateIQ — Approved farmer price update';\n\nreturn [{ json: {\n  approval_id: approval.id,\n  approval_type: approvalType,\n  is_outreach: isOutreach ? 'TRUE' : 'FALSE',\n  new_decision: new_decision,\n  approved_by: approver,\n  final_content: final_content,\n  reason: reason,\n  decided_at: ts,\n  send: send ? 'TRUE' : 'FALSE',\n  produce_lot_id: produce_lot_id,\n  buyer_id: buyer_id,\n  deal_id: deal_id,\n  send_subject: send_subject\n}}];"
+      },
+      "id": "f6a10005-5555-4f60-9a05-500000000005",
+      "name": "Decide",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1080,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "wf006-ap-01", "name": "id", "value": "={{ $('Decide').all()[0].json.approval_id }}", "type": "string" },
+            { "id": "wf006-ap-02", "name": "decision", "value": "={{ $('Decide').all()[0].json.new_decision }}", "type": "string" },
+            { "id": "wf006-ap-03", "name": "approved_by", "value": "={{ $('Decide').all()[0].json.approved_by }}", "type": "string" },
+            { "id": "wf006-ap-04", "name": "final_content", "value": "={{ $('Decide').all()[0].json.final_content }}", "type": "string" },
+            { "id": "wf006-ap-05", "name": "reason", "value": "={{ $('Decide').all()[0].json.reason }}", "type": "string" },
+            { "id": "wf006-ap-06", "name": "decided_at", "value": "={{ $('Decide').all()[0].json.decided_at }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6a10006-6666-4f60-9a05-500000000006",
+      "name": "Build approvals update",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -800,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "approvals",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [ "id" ],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "approval_type", "displayName": "approval_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "related_entity_id", "displayName": "related_entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "requested_by", "displayName": "requested_by", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "approved_by", "displayName": "approved_by", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "decision", "displayName": "decision", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "original_content", "displayName": "original_content", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "final_content", "displayName": "final_content", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "reason", "displayName": "reason", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "decided_at", "displayName": "decided_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f6a10007-7777-4f60-9a05-500000000007",
+      "name": "Update approvals row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -520,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "wf006-al-01", "name": "id", "value": "={{ \"audit_\" + $now.toISO() }}", "type": "string" },
+            { "id": "wf006-al-02", "name": "event_type", "value": "={{ $('Decide').all()[0].json.send === 'TRUE' ? 'message_sent' : 'approval' }}", "type": "string" },
+            { "id": "wf006-al-03", "name": "actor", "value": "={{ $('Decide').all()[0].json.approved_by }}", "type": "string" },
+            { "id": "wf006-al-04", "name": "entity_type", "value": "approval", "type": "string" },
+            { "id": "wf006-al-05", "name": "entity_id", "value": "={{ $('Decide').all()[0].json.approval_id }}", "type": "string" },
+            { "id": "wf006-al-06", "name": "input_summary", "value": "={{ 'decision: ' + $('Decide').all()[0].json.new_decision + ' on ' + $('Decide').all()[0].json.approval_type }}", "type": "string" },
+            { "id": "wf006-al-07", "name": "output_summary", "value": "={{ $('Decide').all()[0].json.send === 'TRUE' ? 'message sent (simulated)' : ('not sent; reason: ' + ($('Decide').all()[0].json.reason || 'n/a')) }}", "type": "string" },
+            { "id": "wf006-al-08", "name": "prompt_version", "value": "n/a", "type": "string" },
+            { "id": "wf006-al-09", "name": "timestamp", "value": "={{ $now.toISO() }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6a10008-8888-4f60-9a05-500000000008",
+      "name": "Prepare audit log row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "audit_log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [ "id" ],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "event_type", "displayName": "event_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "actor", "displayName": "actor", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "entity_type", "displayName": "entity_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "entity_id", "displayName": "entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "input_summary", "displayName": "input_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "output_summary", "displayName": "output_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "prompt_version", "displayName": "prompt_version", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "timestamp", "displayName": "timestamp", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f6a10009-9999-4f60-9a05-500000000009",
+      "name": "Append to audit_log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        40,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "conditions": [
+            {
+              "id": "wf006-if1-01",
+              "leftValue": "={{ $('Decide').all()[0].json.send }}",
+              "rightValue": "TRUE",
+              "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f6a1000a-aaaa-4f60-9a05-500000000010",
+      "name": "Should send?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        320,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "conditions": [
+            {
+              "id": "wf006-if2-01",
+              "leftValue": "={{ $('Decide').all()[0].json.is_outreach }}",
+              "rightValue": "TRUE",
+              "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f6a1000b-bbbb-4f60-9a05-500000000011",
+      "name": "Is buyer outreach?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "wf006-dl-01", "name": "id", "value": "={{ $('Decide').all()[0].json.deal_id }}", "type": "string" },
+            { "id": "wf006-dl-02", "name": "produce_lot_id", "value": "={{ $('Decide').all()[0].json.produce_lot_id }}", "type": "string" },
+            { "id": "wf006-dl-03", "name": "buyer_id", "value": "={{ $('Decide').all()[0].json.buyer_id }}", "type": "string" },
+            { "id": "wf006-dl-04", "name": "current_status", "value": "contacted", "type": "string" },
+            { "id": "wf006-dl-05", "name": "next_action", "value": "Await buyer response", "type": "string" },
+            { "id": "wf006-dl-06", "name": "responsible_user", "value": "={{ $('Decide').all()[0].json.approved_by }}", "type": "string" },
+            { "id": "wf006-dl-07", "name": "last_updated_at", "value": "={{ $now.toISO() }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6a1000c-cccc-4f60-9a05-500000000012",
+      "name": "Build deal row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "deal_records",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [ "id" ],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "produce_lot_id", "displayName": "produce_lot_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "buyer_id", "displayName": "buyer_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "quoted_price", "displayName": "quoted_price", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "quoted_price_unit", "displayName": "quoted_price_unit", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "current_status", "displayName": "current_status", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "next_action", "displayName": "next_action", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "responsible_user", "displayName": "responsible_user", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "last_updated_at", "displayName": "last_updated_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f6a1000d-dddd-4f60-9a05-500000000013",
+      "name": "Upsert deal_records",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1160,
+        180
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "fisayo.dmg@gmail.com",
+        "subject": "={{ $('Decide').all()[0].json.send_subject }}",
+        "message": "={{ '<p><i>[Simulated buyer outreach — intended recipient: buyer ' + $('Decide').all()[0].json.buyer_id + ' for lot ' + $('Decide').all()[0].json.produce_lot_id + ']</i></p><p>' + $('Decide').all()[0].json.final_content + '</p><hr><p style=\"color:#888\">Approved by ' + $('Decide').all()[0].json.approved_by + ' via FarmGateIQ. This is a prototype simulation.</p>' }}",
+        "options": {}
+      },
+      "id": "f6a1000e-eeee-4f60-9a05-500000000014",
+      "name": "Send buyer outreach",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        180
+      ],
+      "webhookId": "d1e2f3a4-7e82-4c1f-9acc-001112030411",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CzCD5Wsv5f2rbOIk",
+          "name": "FarmGateIQ Gmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "fisayo.dmg@gmail.com",
+        "subject": "={{ $('Decide').all()[0].json.send_subject }}",
+        "message": "={{ '<p><i>[Simulated farmer price update broadcast]</i></p><p>' + $('Decide').all()[0].json.final_content + '</p><hr><p style=\"color:#888\">Approved by ' + $('Decide').all()[0].json.approved_by + ' via FarmGateIQ. This is a prototype simulation.</p>' }}",
+        "options": {}
+      },
+      "id": "f6a1000f-ffff-4f60-9a05-500000000015",
+      "name": "Send farmer update",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        420
+      ],
+      "webhookId": "e2f3a4b5-8f92-4d2a-9bdd-001112030412",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CzCD5Wsv5f2rbOIk",
+          "name": "FarmGateIQ Gmail"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Process approval": {
+      "main": [ [ { "node": "Read approvals", "type": "main", "index": 0 } ] ]
+    },
+    "Read approvals": {
+      "main": [ [ { "node": "Find approval", "type": "main", "index": 0 } ] ]
+    },
+    "Find approval": {
+      "main": [ [ { "node": "Read buyer_matches", "type": "main", "index": 0 } ] ]
+    },
+    "Read buyer_matches": {
+      "main": [ [ { "node": "Decide", "type": "main", "index": 0 } ] ]
+    },
+    "Decide": {
+      "main": [ [ { "node": "Build approvals update", "type": "main", "index": 0 } ] ]
+    },
+    "Build approvals update": {
+      "main": [ [ { "node": "Update approvals row", "type": "main", "index": 0 } ] ]
+    },
+    "Update approvals row": {
+      "main": [ [ { "node": "Prepare audit log row", "type": "main", "index": 0 } ] ]
+    },
+    "Prepare audit log row": {
+      "main": [ [ { "node": "Append to audit_log", "type": "main", "index": 0 } ] ]
+    },
+    "Append to audit_log": {
+      "main": [ [ { "node": "Should send?", "type": "main", "index": 0 } ] ]
+    },
+    "Should send?": {
+      "main": [
+        [ { "node": "Is buyer outreach?", "type": "main", "index": 0 } ],
+        []
+      ]
+    },
+    "Is buyer outreach?": {
+      "main": [
+        [ { "node": "Build deal row", "type": "main", "index": 0 } ],
+        [ { "node": "Send farmer update", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Build deal row": {
+      "main": [ [ { "node": "Upsert deal_records", "type": "main", "index": 0 } ] ]
+    },
+    "Upsert deal_records": {
+      "main": [ [ { "node": "Send buyer outreach", "type": "main", "index": 0 } ] ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "wf006-0000-0000-0000-000000000001",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+  },
+  "id": "wf006ApprovalAndSend",
+  "tags": []
+}

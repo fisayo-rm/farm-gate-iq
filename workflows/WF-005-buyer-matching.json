@@ -1,0 +1,466 @@
+{
+  "name": "WF-005 Buyer Matching",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "FarmGateIQ — Find Buyers for a Lot",
+        "formDescription": "Enter the produce lot ID to score buyers and draft outreach for the top matches.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Produce lot ID",
+              "placeholder": "e.g. lot_001",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-1111-4d5e-9f04-400000000001",
+      "name": "Find buyers for a lot",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -1840,
+        420
+      ],
+      "webhookId": "a8b9c0d1-4b52-4f8c-9d99-dd0102030408"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "produce_lots",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-2222-4d5e-9f04-400000000002",
+      "name": "Read produce_lots",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1560,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lotId = String($('Find buyers for a lot').all()[0].json['Produce lot ID'] || '').trim();\nif (!lotId) {\n  throw new Error('Please provide a Produce lot ID.');\n}\nconst rows = $('Read produce_lots').all().map(i => i.json);\nconst lot = rows.find(r => String(r.id).trim() === lotId);\nif (!lot) {\n  throw new Error('Produce lot ID not found: ' + lotId);\n}\nreturn [{ json: lot }];"
+      },
+      "id": "e5d4c3b2-3333-4d5e-9f04-400000000003",
+      "name": "Select lot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "buyers",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-4444-4d5e-9f04-400000000004",
+      "name": "Read buyers",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1000,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lot = $('Select lot').all()[0].json;\nconst buyers = $('Read buyers').all().map(i => i.json);\n\nconst lotCommodity = String(lot.commodity || '').toLowerCase().trim();\nconst lotQty = parseFloat(lot.quantity);\nconst lotLocTokens = String(lot.location || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);\nconst lotQuality = String(lot.quality_notes || '').toLowerCase();\n\nconst qualityKeywords = ['dry', 'low moisture', 'grade 1', 'bagged', 'fumigated'];\nconst trustMap = { preferred: 1, verified: 0.7, unverified: 0.3 };\n\nconst scored = [];\nfor (const b of buyers) {\n  const trust = String(b.trust_status || '').toLowerCase().trim();\n  if (trust === 'blocked') continue; // blocked buyers are never offered for outreach\n  const interests = String(b.commodity_interests || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);\n  if (lotCommodity && interests.length && !interests.includes(lotCommodity)) continue; // hard commodity filter\n\n  const commodity_fit = 1;\n\n  const min = parseFloat(b.min_quantity);\n  const max = parseFloat(b.max_quantity);\n  let quantity_fit;\n  if (isNaN(lotQty)) quantity_fit = 0.3;\n  else if (!isNaN(min) && !isNaN(max) && lotQty >= min && lotQty <= max) quantity_fit = 1;\n  else if (!isNaN(min) && lotQty < min && lotQty >= min * 0.75) quantity_fit = 0.5;\n  else if (!isNaN(max) && lotQty > max && lotQty <= max * 1.25) quantity_fit = 0.5;\n  else quantity_fit = 0.2;\n\n  const prefs = String(b.preferred_locations || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);\n  let location_fit;\n  if (prefs.includes('nationwide')) location_fit = 1;\n  else if (lotLocTokens.some(t => prefs.includes(t))) location_fit = 1;\n  else if (prefs.includes('kaduna')) location_fit = 0.7; // same state, not exact LGA\n  else location_fit = 0.3;\n\n  const req = String(b.quality_requirements || '').toLowerCase();\n  let quality_fit;\n  if (req.includes('any')) quality_fit = 1;\n  else {\n    const required = qualityKeywords.filter(k => req.includes(k));\n    if (required.length === 0) quality_fit = 0.6;\n    else {\n      const met = required.filter(k => lotQuality.includes(k));\n      quality_fit = met.length === required.length ? 1 : (met.length > 0 ? 0.6 : 0.3);\n    }\n  }\n\n  const trust_score = trustMap[trust] != null ? trustMap[trust] : 0.3;\n  const recent_activity_score = 0.5; // placeholder: no last_contacted_at tracked yet (added from Phase 5 deal records)\n\n  const match_score = Math.round(\n    commodity_fit * 30 + quantity_fit * 20 + location_fit * 15 + quality_fit * 15 + trust_score * 10 + recent_activity_score * 10\n  );\n\n  const risk_flags = [];\n  if (trust === 'unverified') risk_flags.push('Buyer unverified - confirm identity before outreach');\n  const pay = String(b.payment_terms || '').toLowerCase();\n  if (/send goods first|cash on delivery|negotiable|unclear/.test(pay)) risk_flags.push('Payment terms need review: ' + b.payment_terms);\n  if (quantity_fit < 1) risk_flags.push('Lot quantity outside buyer preferred range (' + (b.min_quantity || '?') + '-' + (b.max_quantity || '?') + ')');\n  if (quality_fit < 0.6) risk_flags.push('Lot quality may not meet requirement: ' + (b.quality_requirements || ''));\n  if (location_fit < 1) risk_flags.push('Location not an exact match to buyer preferred areas');\n\n  scored.push({\n    buyer_id: b.id,\n    name: b.name,\n    contact_name: b.contact_name,\n    email: b.email,\n    trust_status: trust,\n    payment_terms: b.payment_terms,\n    preferred_locations: b.preferred_locations,\n    quality_requirements: b.quality_requirements,\n    notes: b.notes,\n    min_quantity: b.min_quantity,\n    max_quantity: b.max_quantity,\n    sub_scores: { commodity_fit, quantity_fit, location_fit, quality_fit, trust_score, recent_activity_score },\n    match_score,\n    risk_flags\n  });\n}\n\nscored.sort((a, b) => b.match_score - a.match_score);\nconst top = scored.slice(0, 3);\n\nconst parts = [];\nparts.push('You are helping the Kaduna Maize Farmers Cooperative explain why specific buyers were matched to a maize produce lot, and draft a short outreach email to each.');\nparts.push('The cooperative aggregates maize from its smallholder member farmers and contacts buyers itself. Write each email in the first person AS the Kaduna Maize Farmers Cooperative, reaching out on behalf of its member farmers - NOT as a third party writing for the cooperative.');\nparts.push('Use ONLY the data provided. Do NOT invent buyer details, prices, or guarantees. The outreach is an inquiry only - it must NOT promise a sale, a price, or delivery, and is subject to manager approval and final agreement.');\nparts.push('');\nparts.push('PRODUCE LOT:');\nparts.push('Commodity: ' + lot.commodity);\nparts.push('Quantity: ' + lot.quantity + ' ' + lot.unit);\nparts.push('Location: ' + lot.location);\nparts.push('Availability date: ' + (lot.availability_date || 'not stated'));\nparts.push('Asking price: ' + (lot.asking_price || 'not stated') + ' ' + (lot.asking_price_unit || 'per bag'));\nparts.push('Quality notes: ' + (lot.quality_notes || 'not stated'));\nparts.push('');\nparts.push('MATCHED BUYERS (ranked; match_score is out of 100 from a fixed rule-based formula, NOT your judgement):');\ntop.forEach((m, i) => {\n  parts.push((i + 1) + '. ' + m.name + ' (buyer_id: ' + m.buyer_id + ')');\n  parts.push('   match_score: ' + m.match_score + ' | trust: ' + m.trust_status + ' | wants qty ' + (m.min_quantity || '?') + '-' + (m.max_quantity || '?'));\n  parts.push('   factor fits (0-1): commodity ' + m.sub_scores.commodity_fit + ', quantity ' + m.sub_scores.quantity_fit + ', location ' + m.sub_scores.location_fit + ', quality ' + m.sub_scores.quality_fit + ', trust ' + m.sub_scores.trust_score);\n  parts.push('   buyer wants (verbatim) -> preferred_locations: ' + (m.preferred_locations || 'n/a') + ' | quality_requirements: ' + (m.quality_requirements || 'n/a') + ' | payment_terms: ' + (m.payment_terms || 'n/a') + ' | notes: ' + (m.notes || 'n/a'));\n  parts.push('   risk_flags: ' + (m.risk_flags.length ? m.risk_flags.join('; ') : 'none'));\n});\nparts.push('');\nparts.push('For EACH buyer return: a 1-2 sentence plain-English explanation that references the concrete factors (quantity, location, quality, trust) - not the raw formula - and a short professional outreach email body (3-5 sentences) that opens by naming the cooperative (Kaduna Maize Farmers Cooperative), introduces the available maize lot, and asks if they are interested, with NO price commitment.');\nparts.push('Use the verbatim buyer requirements above to describe how well this lot aligns with what each buyer actually wants (location, quality, payment terms). But you MUST NOT recompute or change the match_score - it is fixed and authoritative - and you MUST NOT claim the lot satisfies a requirement where a risk_flag shows a gap (e.g. unverified buyer, quantity outside range, quality shortfall, non-exact location). Where a risk_flag exists, acknowledge it honestly rather than overclaiming alignment.');\nparts.push('Return ONLY a JSON array, no markdown fences, in the same ranked order:');\nparts.push('[ { \"buyer_id\": \"...\", \"explanation\": \"...\", \"outreach_draft\": \"...\" } ]');\n\nreturn [{ json: {\n  prompt: parts.join('\\n'),\n  lot_id: lot.id,\n  lot_commodity: lot.commodity,\n  lot_quantity: lot.quantity,\n  lot_unit: lot.unit,\n  lot_location: lot.location,\n  top_matches: top,\n  top_count: top.length\n}}];"
+      },
+      "id": "e5d4c3b2-5555-4d5e-9f04-400000000005",
+      "name": "Score buyers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}"
+      },
+      "id": "e5d4c3b2-6666-4d5e-9f04-400000000006",
+      "name": "Explain matches",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        -440,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-6",
+          "cachedResultName": "Claude Sonnet 4.6"
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-7777-4d5e-9f04-400000000007",
+      "name": "Claude",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        -440,
+        640
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "UltMUw3dgYtRgjfO",
+          "name": "FarmGateIQ Anthropic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.all()[0].json;\nconst score = $('Score buyers').all()[0].json;\nconst top = score.top_matches || [];\nconst ts = $now.toISO();\n\nlet explanations = [];\ntry {\n  const text = (item.text || item.output || '').replace(/```json\\s*/gi, '').replace(/```\\s*/g, '').trim();\n  explanations = JSON.parse(text);\n  if (!Array.isArray(explanations)) explanations = [];\n} catch (e) {\n  explanations = [];\n}\n\nfunction findExp(buyerId) {\n  return explanations.find(e => String(e.buyer_id) === String(buyerId)) || null;\n}\n\nconst out = top.map((m, idx) => {\n  const exp = findExp(m.buyer_id);\n  const explanation = (exp && exp.explanation)\n    ? exp.explanation\n    : ('Scored ' + m.match_score + '/100 on commodity, quantity (' + score.lot_quantity + ' ' + score.lot_unit + '), location (' + score.lot_location + ') and ' + m.trust_status + ' trust status.');\n  const outreach = (exp && exp.outreach_draft)\n    ? exp.outreach_draft\n    : ('Dear ' + (m.contact_name || m.name) + ', the Kaduna Maize Farmers Cooperative has a maize lot of ' + score.lot_quantity + ' ' + score.lot_unit + ' available in ' + score.lot_location + ' on behalf of our member farmers. Please let us know if you would be interested in discussing supply. This message is an inquiry only and is subject to confirmation.');\n  const isTop = idx === 0;\n  return { json: {\n    id: 'match_' + ts + '_' + m.buyer_id,\n    produce_lot_id: score.lot_id,\n    buyer_id: m.buyer_id,\n    match_score: m.match_score,\n    match_reason: explanation,\n    risk_flags: m.risk_flags.join('; '),\n    status: isTop ? 'pending_approval' : 'draft',\n    created_at: ts,\n    buyer_name: m.name,\n    buyer_contact: m.contact_name,\n    buyer_email: m.email,\n    trust_status: m.trust_status,\n    outreach_draft: outreach,\n    is_top: isTop ? 'TRUE' : 'FALSE'\n  }};\n});\n\nif (out.length === 0) {\n  throw new Error('No eligible buyers matched this lot (after commodity and blocked-buyer filtering).');\n}\n\nreturn out;"
+      },
+      "id": "e5d4c3b2-8888-4d5e-9f04-400000000008",
+      "name": "Parse matches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "wf005-bm-01", "name": "id", "value": "={{ $json.id }}", "type": "string" },
+            { "id": "wf005-bm-02", "name": "produce_lot_id", "value": "={{ $json.produce_lot_id }}", "type": "string" },
+            { "id": "wf005-bm-03", "name": "buyer_id", "value": "={{ $json.buyer_id }}", "type": "string" },
+            { "id": "wf005-bm-04", "name": "match_score", "value": "={{ $json.match_score }}", "type": "number" },
+            { "id": "wf005-bm-05", "name": "match_reason", "value": "={{ $json.match_reason }}", "type": "string" },
+            { "id": "wf005-bm-06", "name": "risk_flags", "value": "={{ $json.risk_flags }}", "type": "string" },
+            { "id": "wf005-bm-07", "name": "status", "value": "={{ $json.status }}", "type": "string" },
+            { "id": "wf005-bm-08", "name": "created_at", "value": "={{ $json.created_at }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-ffff-4d5e-9f04-400000000015",
+      "name": "Assemble buyer_match row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -20,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "buyer_matches",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [ "id" ],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "produce_lot_id", "displayName": "produce_lot_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "buyer_id", "displayName": "buyer_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "match_score", "displayName": "match_score", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "match_reason", "displayName": "match_reason", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "risk_flags", "displayName": "risk_flags", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "status", "displayName": "status", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "created_at", "displayName": "created_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-9999-4d5e-9f04-400000000009",
+      "name": "Append to buyer_matches",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        120,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const matches = $('Parse matches').all().map(i => i.json);\nconst top = matches.find(m => m.is_top === 'TRUE') || matches[0];\nif (!top) {\n  throw new Error('No matches available to create an approval request.');\n}\nconst ts = $now.toISO();\n\nconst reason = 'Top match: ' + top.buyer_name + ' (score ' + top.match_score + '/100, trust ' + top.trust_status + '). Risk flags: ' + (top.risk_flags || 'none');\nconst matches_html = matches.map((m, i) => '<li>' + (i + 1) + '. <b>' + m.buyer_name + '</b> - score ' + m.match_score + '/100, trust: ' + m.trust_status + (m.risk_flags ? ' - &#9888; ' + m.risk_flags : '') + '</li>').join('');\n\nreturn [{ json: {\n  id: 'appr_' + ts,\n  approval_type: 'buyer_outreach',\n  related_entity_id: top.id,\n  requested_by: 'system',\n  approved_by: '',\n  decision: 'pending',\n  original_content: top.outreach_draft,\n  final_content: '',\n  reason: reason,\n  decided_at: '',\n  matches_html: matches_html\n}}];"
+      },
+      "id": "e5d4c3b2-aaaa-4d5e-9f04-400000000010",
+      "name": "Assemble approval row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "approvals",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [ "id" ],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "approval_type", "displayName": "approval_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "related_entity_id", "displayName": "related_entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "requested_by", "displayName": "requested_by", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "approved_by", "displayName": "approved_by", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "decision", "displayName": "decision", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "original_content", "displayName": "original_content", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "final_content", "displayName": "final_content", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "reason", "displayName": "reason", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "decided_at", "displayName": "decided_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-bbbb-4d5e-9f04-400000000011",
+      "name": "Append to approvals",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        680,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "wf005-al-01", "name": "id", "value": "={{ \"audit_\" + $now.toISO() }}", "type": "string" },
+            { "id": "wf005-al-02", "name": "event_type", "value": "llm_output", "type": "string" },
+            { "id": "wf005-al-03", "name": "actor", "value": "system", "type": "string" },
+            { "id": "wf005-al-04", "name": "entity_type", "value": "buyer_match", "type": "string" },
+            { "id": "wf005-al-05", "name": "entity_id", "value": "={{ $('Select lot').all()[0].json.id }}", "type": "string" },
+            { "id": "wf005-al-06", "name": "input_summary", "value": "={{ 'lot ' + $('Select lot').all()[0].json.id + ' (' + $('Select lot').all()[0].json.commodity + ', ' + $('Select lot').all()[0].json.quantity + ' ' + $('Select lot').all()[0].json.unit + ', ' + $('Select lot').all()[0].json.location + ')' }}", "type": "string" },
+            { "id": "wf005-al-07", "name": "output_summary", "value": "={{ $('Parse matches').all().length + ' matches; top: ' + $('Parse matches').all()[0].json.buyer_name + ' (' + $('Parse matches').all()[0].json.match_score + '/100)' }}", "type": "string" },
+            { "id": "wf005-al-08", "name": "prompt_version", "value": "v1.0", "type": "string" },
+            { "id": "wf005-al-09", "name": "timestamp", "value": "={{ $now.toISO() }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-cccc-4d5e-9f04-400000000012",
+      "name": "Prepare audit log row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "audit_log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [ "id" ],
+          "schema": [
+            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
+            { "id": "event_type", "displayName": "event_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "actor", "displayName": "actor", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "entity_type", "displayName": "entity_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "entity_id", "displayName": "entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "input_summary", "displayName": "input_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "output_summary", "displayName": "output_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "prompt_version", "displayName": "prompt_version", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "timestamp", "displayName": "timestamp", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e5d4c3b2-dddd-4d5e-9f04-400000000013",
+      "name": "Append to audit_log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1240,
+        420
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "fisayo.dmg@gmail.com",
+        "subject": "={{ 'FarmGateIQ — ' + $('Parse matches').all().length + ' buyer matches for lot ' + $('Select lot').all()[0].json.id }}",
+        "message": "={{ '<p><b>Buyer matches generated for lot ' + $('Select lot').all()[0].json.id + '</b> (' + $('Select lot').all()[0].json.commodity + ', ' + $('Select lot').all()[0].json.quantity + ' ' + $('Select lot').all()[0].json.unit + ' in ' + $('Select lot').all()[0].json.location + ')</p>' + '<p><b>Ranked matches:</b></p><ul>' + $('Assemble approval row').all()[0].json.matches_html + '</ul>' + '<p><b>Top-match outreach draft (pending your approval — nothing has been sent):</b></p><p>' + $('Assemble approval row').all()[0].json.original_content + '</p>' + '<p>Review the <b>buyer_matches</b> and <b>approvals</b> tabs in FarmGateIQ Demo before any outreach.</p>' }}",
+        "options": {}
+      },
+      "id": "e5d4c3b2-eeee-4d5e-9f04-400000000014",
+      "name": "Notify manager — matches ready",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1520,
+        420
+      ],
+      "webhookId": "b9c0d1e2-5c62-4a9d-9eaa-ee0102030409",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CzCD5Wsv5f2rbOIk",
+          "name": "FarmGateIQ Gmail"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Find buyers for a lot": {
+      "main": [ [ { "node": "Read produce_lots", "type": "main", "index": 0 } ] ]
+    },
+    "Read produce_lots": {
+      "main": [ [ { "node": "Select lot", "type": "main", "index": 0 } ] ]
+    },
+    "Select lot": {
+      "main": [ [ { "node": "Read buyers", "type": "main", "index": 0 } ] ]
+    },
+    "Read buyers": {
+      "main": [ [ { "node": "Score buyers", "type": "main", "index": 0 } ] ]
+    },
+    "Score buyers": {
+      "main": [ [ { "node": "Explain matches", "type": "main", "index": 0 } ] ]
+    },
+    "Claude": {
+      "ai_languageModel": [ [ { "node": "Explain matches", "type": "ai_languageModel", "index": 0 } ] ]
+    },
+    "Explain matches": {
+      "main": [ [ { "node": "Parse matches", "type": "main", "index": 0 } ] ]
+    },
+    "Parse matches": {
+      "main": [ [ { "node": "Assemble buyer_match row", "type": "main", "index": 0 } ] ]
+    },
+    "Assemble buyer_match row": {
+      "main": [ [ { "node": "Append to buyer_matches", "type": "main", "index": 0 } ] ]
+    },
+    "Append to buyer_matches": {
+      "main": [ [ { "node": "Assemble approval row", "type": "main", "index": 0 } ] ]
+    },
+    "Assemble approval row": {
+      "main": [ [ { "node": "Append to approvals", "type": "main", "index": 0 } ] ]
+    },
+    "Append to approvals": {
+      "main": [ [ { "node": "Prepare audit log row", "type": "main", "index": 0 } ] ]
+    },
+    "Prepare audit log row": {
+      "main": [ [ { "node": "Append to audit_log", "type": "main", "index": 0 } ] ]
+    },
+    "Append to audit_log": {
+      "main": [ [ { "node": "Notify manager — matches ready", "type": "main", "index": 0 } ] ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "wf005-0000-0000-0000-000000000001",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+  },
+  "id": "wf005BuyerMatching",
+  "tags": []
+}

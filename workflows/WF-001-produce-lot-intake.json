@@ -1,0 +1,867 @@
+{
+  "name": "WF-001 Produce Lot Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "FarmGateIQ — Produce Lot Intake",
+        "formDescription": "Enter your produce details in the free text box, or fill in the structured fields below — or both. Privacy: the details you submit (including the member name) are used only by the cooperative to register produce and match it to buyers. They are not shared with third parties without consent. (Nigeria Data Protection Act, 2023.)",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Member name",
+              "placeholder": "e.g. Aminu Musa",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Free text submission",
+              "fieldType": "textarea",
+              "placeholder": "e.g. I have 120 bags of dry maize in Zaria available from 15 June. Asking 48000 per bag."
+            },
+            {
+              "fieldLabel": "Commodity",
+              "placeholder": "e.g. maize, corn, masara"
+            },
+            {
+              "fieldLabel": "Quantity",
+              "fieldType": "number",
+              "placeholder": "e.g. 120"
+            },
+            {
+              "fieldLabel": "Unit",
+              "placeholder": "e.g. bag, sack, kg"
+            },
+            {
+              "fieldLabel": "Location",
+              "placeholder": "e.g. Zaria, Kaduna"
+            },
+            {
+              "fieldLabel": "Availability date",
+              "fieldType": "date"
+            },
+            {
+              "fieldLabel": "Asking price",
+              "fieldType": "number",
+              "placeholder": "e.g. 48000"
+            },
+            {
+              "fieldLabel": "Quality notes",
+              "fieldType": "textarea",
+              "placeholder": "e.g. dry, bagged, moisture below 13%"
+            },
+            {
+              "fieldLabel": "Consent",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  { "option": "I consent to these details being used by the cooperative to register produce and match it to buyers, in line with the privacy notice above." }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fc43d097-02d0-4ced-ad48-5771e138e6fe",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -2320,
+        736
+      ],
+      "webhookId": "7d8f822f-4525-4eb2-93cf-b22480a22f9b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst item = items[0].json;\n\nif (!item['Member name'] || String(item['Member name']).trim() === '') {\n  throw new Error('Missing required field: Member name');\n}\n\nconst hasFreeText = !!(item['Free text submission'] && String(item['Free text submission']).trim());\nconst hasCommodity = !!(item['Commodity'] && String(item['Commodity']).trim());\n\nif (!hasFreeText && !hasCommodity) {\n  throw new Error('Please provide either a free text description or fill in the Commodity field.');\n}\n\nconst parts = [];\nparts.push('You are processing a produce lot submission for a Nigerian farmer cooperative in Kaduna State.');\nparts.push('The field officer may have provided a free text description, structured fields, or both.');\nparts.push('Extract and normalize everything available into a JSON object.');\nparts.push('');\nparts.push('FREE TEXT (primary input if provided):');\nparts.push(item['Free text submission'] || 'none');\nparts.push('');\nparts.push('STRUCTURED FIELDS (may be empty — use to supplement or confirm free text):');\nparts.push('Commodity: ' + (item['Commodity'] || 'not provided'));\nparts.push('Quantity: ' + (item['Quantity'] || 'not provided') + ' ' + (item['Unit'] || ''));\nparts.push('Location: ' + (item['Location'] || 'not provided'));\nparts.push('Availability date: ' + (item['Availability date'] || 'not provided'));\nparts.push('Asking price: ' + (item['Asking price'] || 'not provided') + ' per bag');\nparts.push('Quality notes: ' + (item['Quality notes'] || 'not provided'));\nparts.push('');\nparts.push('NORMALIZATION RULES:');\nparts.push('1. Commodity: corn, masara, yellow maize, white maize -> maize. Keep unknown crops as-is.');\nparts.push('2. Unit: sack/sacks -> bag. For mudu or paint bucket: keep original but set needs_review true.');\nparts.push('3. Location: if the LGA is in Kaduna State (Zaria, Sabon Gari, Giwa, Makarfi, Ikara, Kubau), append a comma and Kaduna to the location.');\nparts.push('4. Date: convert to YYYY-MM-DD. Assume year 2026 if year not stated.');\nparts.push('5. Confidence: high if all fields extracted cleanly; medium if minor normalizations or one field missing; low if key fields (location, quantity, commodity) are missing.');\nparts.push('6. Set needs_review to true if confidence is low, unit cannot be normalized, or price is below 30000 or above 80000.');\nparts.push('7. List any fields you could not extract in missing_fields.');\nparts.push('');\nparts.push('REQUIRED OUTPUT FORMAT:');\nparts.push('Return ONLY a valid JSON object with no explanation and no markdown code fences.');\nparts.push('Include these fields: commodity (string), raw_commodity (string — the exact commodity name as it appeared in the input before normalization, e.g. \"corn\" not \"maize\"; if already standard write the same as commodity), raw_quantity_text (string — the quantity and unit exactly as written in the input, e.g. \"120 bags\", \"about 80 sacks\", \"50 bags\"), quantity (number or null), unit (string), location (string),');\nparts.push('availability_date (YYYY-MM-DD or empty string), quality_notes (string),');\nparts.push('asking_price (number or null), asking_price_unit (string, default per bag), confidence (high or medium or low),');\nparts.push('needs_review (boolean), missing_fields (array of strings), normalization_notes (string).');\n\nconst prompt = parts.join('\\n');\n\nreturn [{ json: Object.assign({}, item, { prompt: prompt }) }];"
+      },
+      "id": "14b76d7c-16d0-4a7e-b1f5-4e36d2cd45b5",
+      "name": "Validate and build prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2032,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}"
+      },
+      "id": "ee95dfd2-c6a1-4893-ac37-477023c2a72f",
+      "name": "Extract and normalize",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        -1760,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-6",
+          "cachedResultName": "Claude Sonnet 4.6"
+        },
+        "options": {}
+      },
+      "id": "37740b26-3129-4c31-8ed9-5ef9794366aa",
+      "name": "Claude",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        -1760,
+        960
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "UltMUw3dgYtRgjfO",
+          "name": "FarmGateIQ Anthropic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst item = items[0].json;\nconst formItem = $('On form submission').all()[0].json;\n\nlet llm;\ntry {\n  const text = (item.text || item.output || '').replace(/```json\\s*/gi, '').replace(/```\\s*/g, '').trim();\n  llm = JSON.parse(text);\n} catch(e) {\n  llm = {\n    commodity: formItem['Commodity'] || '',\n    quantity: parseFloat(formItem['Quantity']) || null,\n    unit: formItem['Unit'] || '',\n    location: formItem['Location'] || '',\n    availability_date: '',\n    quality_notes: formItem['Quality notes'] || '',\n    asking_price: parseFloat(formItem['Asking price']) || null,\n    asking_price_unit: 'per bag',\n    confidence: 'low',\n    needs_review: true,\n    missing_fields: [],\n    normalization_notes: 'LLM parse error: ' + e.message\n  };\n}\n\nconst rawLower = (formItem['Commodity'] || '').toLowerCase().trim();\nconst commodityLookup = { corn: 'maize', masara: 'maize', 'yellow maize': 'maize', 'white maize': 'maize' };\nif (commodityLookup[rawLower]) llm.commodity = commodityLookup[rawLower];\n\nconst unitLower = (llm.unit || '').toLowerCase().trim();\nif (unitLower === 'sack' || unitLower === 'sacks' || unitLower === 'bags') llm.unit = 'bag';\n\nconst scoreMap = { high: 0.90, medium: 0.70, low: 0.35 };\nconst confidenceScore = scoreMap[llm.confidence] || 0.35;\nconst needsReview = llm.needs_review === true || llm.confidence === 'low';\n\nreturn [{ json: {\n  member_name: formItem['Member name'],\n  raw_commodity: formItem['Commodity'] || llm.raw_commodity || '',\n  raw_quantity_text: (formItem['Quantity'] && parseFloat(formItem['Quantity']) > 0)\n    ? (String(formItem['Quantity']) + ' ' + String(formItem['Unit'] || '')).trim()\n    : (llm.raw_quantity_text || (llm.quantity != null ? String(llm.quantity) + ' ' + String(llm.unit || '') : '')).trim(),\n  commodity: llm.commodity || '',\n  quantity: llm.quantity,\n  unit: llm.unit || '',\n  location: llm.location || formItem['Location'] || '',\n  availability_date: llm.availability_date || '',\n  quality_notes: llm.quality_notes || formItem['Quality notes'] || '',\n  asking_price: llm.asking_price,\n  asking_price_unit: llm.asking_price_unit || 'per bag',\n  confidence: llm.confidence || 'low',\n  confidence_score: confidenceScore,\n  needs_review: needsReview ? 'TRUE' : 'FALSE',\n  normalization_notes: llm.normalization_notes || '',\n  missing_fields: (llm.missing_fields || []).join(', ')\n}}];"
+      },
+      "id": "b128d770-5bc6-4ff3-81e5-8916f2e5178d",
+      "name": "Parse LLM output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1472,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wf001-ef-01",
+              "name": "id",
+              "value": "={{ \"lot_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-02",
+              "name": "cooperative_id",
+              "value": "coop_kaduna_001",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-03",
+              "name": "member_name",
+              "value": "={{ $json.member_name }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-04",
+              "name": "commodity",
+              "value": "={{ $json.commodity }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-05",
+              "name": "raw_commodity",
+              "value": "={{ $json.raw_commodity }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-06",
+              "name": "quantity",
+              "value": "={{ $json.quantity }}",
+              "type": "number"
+            },
+            {
+              "id": "wf001-ef-07",
+              "name": "unit",
+              "value": "={{ $json.unit }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-08",
+              "name": "raw_quantity_text",
+              "value": "={{ $json.raw_quantity_text }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-09",
+              "name": "location",
+              "value": "={{ $json.location }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-10",
+              "name": "availability_date",
+              "value": "={{ $json.availability_date }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-11",
+              "name": "quality_notes",
+              "value": "={{ $json.quality_notes }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-12",
+              "name": "asking_price",
+              "value": "={{ $json.asking_price }}",
+              "type": "number"
+            },
+            {
+              "id": "wf001-ef-13",
+              "name": "asking_price_unit",
+              "value": "={{ $json.asking_price_unit }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-14",
+              "name": "status",
+              "value": "new",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-15",
+              "name": "confidence_score",
+              "value": "={{ $json.confidence_score }}",
+              "type": "number"
+            },
+            {
+              "id": "wf001-ef-16",
+              "name": "needs_review",
+              "value": "={{ $json.needs_review }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-ef-17",
+              "name": "prototype_data",
+              "value": "TRUE",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d59244f3-71dd-4d9f-8244-610b588136dc",
+      "name": "Assemble produce lot row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1200,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "produce_lots",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cooperative_id",
+              "displayName": "cooperative_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "member_name",
+              "displayName": "member_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "commodity",
+              "displayName": "commodity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_commodity",
+              "displayName": "raw_commodity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit",
+              "displayName": "unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_quantity_text",
+              "displayName": "raw_quantity_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "availability_date",
+              "displayName": "availability_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality_notes",
+              "displayName": "quality_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "asking_price",
+              "displayName": "asking_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "asking_price_unit",
+              "displayName": "asking_price_unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confidence_score",
+              "displayName": "confidence_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_review",
+              "displayName": "needs_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prototype_data",
+              "displayName": "prototype_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "1c19cdd8-ae14-47b3-bccb-0ac947a5c641",
+      "name": "Append to produce_lots",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -912,
+        736
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wf001-al-01",
+              "name": "id",
+              "value": "={{ \"audit_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-al-02",
+              "name": "event_type",
+              "value": "submission",
+              "type": "string"
+            },
+            {
+              "id": "wf001-al-03",
+              "name": "actor",
+              "value": "field_officer",
+              "type": "string"
+            },
+            {
+              "id": "wf001-al-04",
+              "name": "entity_type",
+              "value": "produce_lot",
+              "type": "string"
+            },
+            {
+              "id": "wf001-al-05",
+              "name": "entity_id",
+              "value": "={{ $('Assemble produce lot row').all()[0].json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-al-06",
+              "name": "input_summary",
+              "value": "={{ $('On form submission').all()[0].json['Member name'] + ' / ' + $('On form submission').all()[0].json['Commodity'] + ' / ' + $('On form submission').all()[0].json['Location'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-al-07",
+              "name": "output_summary",
+              "value": "={{ 'commodity: ' + $('Assemble produce lot row').all()[0].json.commodity + ' | confidence: ' + $('Assemble produce lot row').all()[0].json.confidence + ' | needs_review: ' + $('Assemble produce lot row').all()[0].json.needs_review }}",
+              "type": "string"
+            },
+            {
+              "id": "wf001-al-08",
+              "name": "prompt_version",
+              "value": "v1.0",
+              "type": "string"
+            },
+            {
+              "id": "wf001-al-09",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2b2053c3-3672-4e1e-908c-2a032bf46bb0",
+      "name": "Prepare audit log row",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg",
+          "mode": "list",
+          "cachedResultName": "FarmGateIQ Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "audit_log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "actor",
+              "displayName": "actor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_type",
+              "displayName": "entity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_id",
+              "displayName": "entity_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_summary",
+              "displayName": "input_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output_summary",
+              "displayName": "output_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_version",
+              "displayName": "prompt_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "39e48ef8-7e83-4f6e-98be-d49b2133c4e4",
+      "name": "Append to audit_log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        736
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yzReTqguKip3S2yU",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "wf001-if-01",
+              "leftValue": "={{ $('Assemble produce lot row').all()[0].json.needs_review }}",
+              "rightValue": "TRUE",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "dc08cc39-858a-4d6f-a866-90b0d48366e7",
+      "name": "Route by review status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "fisayo.dmg@gmail.com",
+        "subject": "={{ 'FarmGateIQ — Lot needs review: ' + $('Assemble produce lot row').all()[0].json.raw_commodity + ' from ' + $('Assemble produce lot row').all()[0].json.member_name }}",
+        "message": "={{ '<p><b>A produce lot submission requires your review.</b></p><p>Member: ' + $('Assemble produce lot row').all()[0].json.member_name + '<br>Commodity submitted: ' + $('Assemble produce lot row').all()[0].json.raw_commodity + '<br>Normalized to: ' + $('Assemble produce lot row').all()[0].json.commodity + '<br>Quantity: ' + $('Assemble produce lot row').all()[0].json.quantity + ' ' + $('Assemble produce lot row').all()[0].json.unit + '<br>Location: ' + $('Assemble produce lot row').all()[0].json.location + '<br>Confidence: ' + $('Assemble produce lot row').all()[0].json.confidence + '<br>Notes: ' + $('Assemble produce lot row').all()[0].json.normalization_notes + '</p><p>Please check the produce_lots tab in FarmGateIQ Demo to review this submission.</p>' }}",
+        "options": {}
+      },
+      "id": "00346185-b717-41c3-9f50-c18fd85115ab",
+      "name": "Notify — review needed",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        608
+      ],
+      "webhookId": "7d733caa-7b3d-4d7a-96e7-3a837117aa13",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CzCD5Wsv5f2rbOIk",
+          "name": "FarmGateIQ Gmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "fisayo.dmg@gmail.com",
+        "subject": "={{ 'FarmGateIQ — New lot: ' + $('Assemble produce lot row').all()[0].json.commodity + ' from ' + $('Assemble produce lot row').all()[0].json.member_name }}",
+        "message": "={{ '<p><b>A new produce lot has been submitted and normalized.</b></p><p>Member: ' + $('Assemble produce lot row').all()[0].json.member_name + '<br>Commodity: ' + $('Assemble produce lot row').all()[0].json.commodity + '<br>Quantity: ' + $('Assemble produce lot row').all()[0].json.quantity + ' ' + $('Assemble produce lot row').all()[0].json.unit + '<br>Location: ' + $('Assemble produce lot row').all()[0].json.location + '<br>Asking price: NGN ' + $('Assemble produce lot row').all()[0].json.asking_price + ' per bag<br>Availability date: ' + $('Assemble produce lot row').all()[0].json.availability_date + '<br>Confidence: ' + $('Assemble produce lot row').all()[0].json.confidence_score + '</p>' }}",
+        "options": {}
+      },
+      "id": "444455df-9c8c-4ae8-ae7e-e5e7f58a6e5b",
+      "name": "Notify — new lot received",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        848
+      ],
+      "webhookId": "64576375-4c8d-447c-83a5-c7746e7b1da5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CzCD5Wsv5f2rbOIk",
+          "name": "FarmGateIQ Gmail"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Validate and build prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and build prompt": {
+      "main": [
+        [
+          {
+            "node": "Extract and normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract and normalize",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract and normalize": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM output": {
+      "main": [
+        [
+          {
+            "node": "Assemble produce lot row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble produce lot row": {
+      "main": [
+        [
+          {
+            "node": "Append to produce_lots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to produce_lots": {
+      "main": [
+        [
+          {
+            "node": "Prepare audit log row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare audit log row": {
+      "main": [
+        [
+          {
+            "node": "Append to audit_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to audit_log": {
+      "main": [
+        [
+          {
+            "node": "Route by review status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by review status": {
+      "main": [
+        [
+          {
+            "node": "Notify — review needed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify — new lot received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "368b25f8-6385-4876-a08b-481cff0eac5f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+  },
+  "id": "Um4UP3BeBZoIHPG4",
+  "tags": []
+}
