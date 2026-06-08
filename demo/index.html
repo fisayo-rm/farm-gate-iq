@@ -58,8 +58,13 @@
   .logo .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--green-2),var(--green));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow)}
   .logo .mark svg{width:18px;height:18px}
   .top .spacer{flex:1}
-  .pill{font-size:12px;font-weight:700;color:var(--green-d);background:#d6ecdb;border:1px solid #b9dcc2;padding:6px 11px;border-radius:999px}
+  /* status pills are quiet, non-interactive labels */
+  .pill{font-size:12px;font-weight:700;color:#5d6f63;background:#eef3ee;border:1px solid var(--line);padding:6px 11px;border-radius:999px;cursor:default}
   .pill.amber{color:var(--amber-d);background:#fdeccc;border-color:#f4d79a}
+  /* the live CTA is a raised, reactive button so it clearly reads as clickable */
+  .pill.live{font-weight:800;color:var(--green-d);background:var(--amber);border:1px solid var(--amber-d);text-decoration:none;cursor:pointer;box-shadow:0 2px 8px rgba(245,166,35,.45);transition:transform .12s ease,box-shadow .12s ease}
+  .pill.live:hover{background:#f6b545;transform:translateY(-1px) scale(1.03);box-shadow:0 4px 14px rgba(245,166,35,.55)}
+  .pill.live:active{transform:translateY(0) scale(1)}
 
   /* Progress */
   .progress{height:6px;background:#dce6dd;border-radius:99px;overflow:hidden;margin-bottom:14px}
@@ -180,6 +185,8 @@
   .overlay h1{font-size:30px;margin:0;letter-spacing:-.6px}
   .overlay p{max-width:60ch;line-height:1.65;color:#cdeed6;margin:0}
   .overlay .go{background:#fff;color:var(--green-d);border:0;padding:13px 26px;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;margin-top:6px;box-shadow:var(--shadow)}
+  .overlay .go.live{background:var(--amber);color:var(--green-d);text-decoration:none;display:inline-block;margin-top:10px}
+  .overlay .go.live:hover{background:#f6b545}
   .overlay .small{font-size:12px;color:#a9dab6}
   .overlay.hide{display:none}
   .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
@@ -202,6 +209,7 @@
     <span class="spacer"></span>
     <span class="pill" id="toolPill">Walkthrough</span>
     <span class="pill amber">Synthetic demo data</span>
+    <a class="pill live" href="https://farmgateiq-demo-console.vercel.app" target="_blank" rel="noopener" title="Open the live app (runs the real workflows) in a new tab">▶ Live version ↗</a>
   </div>
 
   <div class="progress"><i id="bar"></i></div>
@@ -214,6 +222,7 @@
         <span>n8n orchestration</span><span>Claude (Anthropic)</span><span>RAG · Pinecone</span><span>Google Sheets</span><span>Human-in-the-loop</span>
       </div>
       <button class="go" id="startBtn">Start the tour →</button>
+      <a class="go live" href="https://farmgateiq-demo-console.vercel.app" target="_blank" rel="noopener">▶ Try the live version (runs the real workflows) →</a>
       <p class="small">Use ← → arrow keys, the buttons, or click the glowing element to advance.</p>
     </div>
   </div>
@@ -553,6 +562,7 @@ endOverlay.innerHTML = `
   <p>Every number came from the cooperative's own data. No buyer was contacted without the manager's approval. And every step is in the audit log — that's the safeguard story, end to end.</p>
   <div class="badges"><span>9 workflows</span><span>RAG-grounded pricing</span><span>100% approval-gated outbound</span><span>Full audit trail</span></div>
   <button class="go" id="restartBtn">↺ Watch again</button>
+  <a class="go live" href="https://farmgateiq-demo-console.vercel.app" target="_blank" rel="noopener">▶ Try the live version (runs the real workflows) →</a>
   <p class="small">FarmGateIQ — cooperative farmgate price intelligence &amp; buyer matching.</p>`;
 wrap.appendChild(endOverlay);
 

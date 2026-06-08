@@ -17,11 +17,21 @@
               "fieldType": "dropdown",
               "fieldOptions": {
                 "values": [
-                  { "option": "approve" },
-                  { "option": "edit_and_approve" },
-                  { "option": "reject" },
-                  { "option": "request_buyer_verification" },
-                  { "option": "request_farmer_confirmation" }
+                  {
+                    "option": "approve"
+                  },
+                  {
+                    "option": "edit_and_approve"
+                  },
+                  {
+                    "option": "reject"
+                  },
+                  {
+                    "option": "request_buyer_verification"
+                  },
+                  {
+                    "option": "request_farmer_confirmation"
+                  }
                 ]
               },
               "requiredField": true
@@ -148,12 +158,42 @@
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "wf006-ap-01", "name": "id", "value": "={{ $('Decide').all()[0].json.approval_id }}", "type": "string" },
-            { "id": "wf006-ap-02", "name": "decision", "value": "={{ $('Decide').all()[0].json.new_decision }}", "type": "string" },
-            { "id": "wf006-ap-03", "name": "approved_by", "value": "={{ $('Decide').all()[0].json.approved_by }}", "type": "string" },
-            { "id": "wf006-ap-04", "name": "final_content", "value": "={{ $('Decide').all()[0].json.final_content }}", "type": "string" },
-            { "id": "wf006-ap-05", "name": "reason", "value": "={{ $('Decide').all()[0].json.reason }}", "type": "string" },
-            { "id": "wf006-ap-06", "name": "decided_at", "value": "={{ $('Decide').all()[0].json.decided_at }}", "type": "string" }
+            {
+              "id": "wf006-ap-01",
+              "name": "id",
+              "value": "={{ $('Decide').all()[0].json.approval_id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-ap-02",
+              "name": "decision",
+              "value": "={{ $('Decide').all()[0].json.new_decision }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-ap-03",
+              "name": "approved_by",
+              "value": "={{ $('Decide').all()[0].json.approved_by }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-ap-04",
+              "name": "final_content",
+              "value": "={{ $('Decide').all()[0].json.final_content }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-ap-05",
+              "name": "reason",
+              "value": "={{ $('Decide').all()[0].json.reason }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-ap-06",
+              "name": "decided_at",
+              "value": "={{ $('Decide').all()[0].json.decided_at }}",
+              "type": "string"
+            }
           ]
         },
         "options": {}
@@ -185,18 +225,101 @@
         "columns": {
           "mappingMode": "autoMapInputData",
           "value": {},
-          "matchingColumns": [ "id" ],
+          "matchingColumns": [
+            "id"
+          ],
           "schema": [
-            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
-            { "id": "approval_type", "displayName": "approval_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "related_entity_id", "displayName": "related_entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "requested_by", "displayName": "requested_by", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "approved_by", "displayName": "approved_by", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "decision", "displayName": "decision", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "original_content", "displayName": "original_content", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "final_content", "displayName": "final_content", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "reason", "displayName": "reason", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "decided_at", "displayName": "decided_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approval_type",
+              "displayName": "approval_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "related_entity_id",
+              "displayName": "related_entity_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "requested_by",
+              "displayName": "requested_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approved_by",
+              "displayName": "approved_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decision",
+              "displayName": "decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "original_content",
+              "displayName": "original_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "final_content",
+              "displayName": "final_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "decided_at",
+              "displayName": "decided_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
@@ -222,15 +345,60 @@
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "wf006-al-01", "name": "id", "value": "={{ \"audit_\" + $now.toISO() }}", "type": "string" },
-            { "id": "wf006-al-02", "name": "event_type", "value": "={{ $('Decide').all()[0].json.send === 'TRUE' ? 'message_sent' : 'approval' }}", "type": "string" },
-            { "id": "wf006-al-03", "name": "actor", "value": "={{ $('Decide').all()[0].json.approved_by }}", "type": "string" },
-            { "id": "wf006-al-04", "name": "entity_type", "value": "approval", "type": "string" },
-            { "id": "wf006-al-05", "name": "entity_id", "value": "={{ $('Decide').all()[0].json.approval_id }}", "type": "string" },
-            { "id": "wf006-al-06", "name": "input_summary", "value": "={{ 'decision: ' + $('Decide').all()[0].json.new_decision + ' on ' + $('Decide').all()[0].json.approval_type }}", "type": "string" },
-            { "id": "wf006-al-07", "name": "output_summary", "value": "={{ $('Decide').all()[0].json.send === 'TRUE' ? 'message sent (simulated)' : ('not sent; reason: ' + ($('Decide').all()[0].json.reason || 'n/a')) }}", "type": "string" },
-            { "id": "wf006-al-08", "name": "prompt_version", "value": "n/a", "type": "string" },
-            { "id": "wf006-al-09", "name": "timestamp", "value": "={{ $now.toISO() }}", "type": "string" }
+            {
+              "id": "wf006-al-01",
+              "name": "id",
+              "value": "={{ \"audit_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-al-02",
+              "name": "event_type",
+              "value": "={{ $('Decide').all()[0].json.send === 'TRUE' ? 'message_sent' : 'approval' }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-al-03",
+              "name": "actor",
+              "value": "={{ $('Decide').all()[0].json.approved_by }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-al-04",
+              "name": "entity_type",
+              "value": "approval",
+              "type": "string"
+            },
+            {
+              "id": "wf006-al-05",
+              "name": "entity_id",
+              "value": "={{ $('Decide').all()[0].json.approval_id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-al-06",
+              "name": "input_summary",
+              "value": "={{ 'decision: ' + $('Decide').all()[0].json.new_decision + ' on ' + $('Decide').all()[0].json.approval_type }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-al-07",
+              "name": "output_summary",
+              "value": "={{ $('Decide').all()[0].json.send === 'TRUE' ? 'message sent (simulated)' : ('not sent; reason: ' + ($('Decide').all()[0].json.reason || 'n/a')) }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-al-08",
+              "name": "prompt_version",
+              "value": "n/a",
+              "type": "string"
+            },
+            {
+              "id": "wf006-al-09",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
           ]
         },
         "options": {}
@@ -262,17 +430,92 @@
         "columns": {
           "mappingMode": "autoMapInputData",
           "value": {},
-          "matchingColumns": [ "id" ],
+          "matchingColumns": [
+            "id"
+          ],
           "schema": [
-            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
-            { "id": "event_type", "displayName": "event_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "actor", "displayName": "actor", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "entity_type", "displayName": "entity_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "entity_id", "displayName": "entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "input_summary", "displayName": "input_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "output_summary", "displayName": "output_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "prompt_version", "displayName": "prompt_version", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "timestamp", "displayName": "timestamp", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "actor",
+              "displayName": "actor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_type",
+              "displayName": "entity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_id",
+              "displayName": "entity_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_summary",
+              "displayName": "input_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output_summary",
+              "displayName": "output_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_version",
+              "displayName": "prompt_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
@@ -297,13 +540,22 @@
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
           "conditions": [
             {
               "id": "wf006-if1-01",
               "leftValue": "={{ $('Decide').all()[0].json.send }}",
               "rightValue": "TRUE",
-              "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" }
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
             }
           ],
           "combinator": "and"
@@ -322,13 +574,22 @@
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
           "conditions": [
             {
               "id": "wf006-if2-01",
               "leftValue": "={{ $('Decide').all()[0].json.is_outreach }}",
               "rightValue": "TRUE",
-              "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" }
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
             }
           ],
           "combinator": "and"
@@ -348,13 +609,48 @@
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "wf006-dl-01", "name": "id", "value": "={{ $('Decide').all()[0].json.deal_id }}", "type": "string" },
-            { "id": "wf006-dl-02", "name": "produce_lot_id", "value": "={{ $('Decide').all()[0].json.produce_lot_id }}", "type": "string" },
-            { "id": "wf006-dl-03", "name": "buyer_id", "value": "={{ $('Decide').all()[0].json.buyer_id }}", "type": "string" },
-            { "id": "wf006-dl-04", "name": "current_status", "value": "contacted", "type": "string" },
-            { "id": "wf006-dl-05", "name": "next_action", "value": "Await buyer response", "type": "string" },
-            { "id": "wf006-dl-06", "name": "responsible_user", "value": "={{ $('Decide').all()[0].json.approved_by }}", "type": "string" },
-            { "id": "wf006-dl-07", "name": "last_updated_at", "value": "={{ $now.toISO() }}", "type": "string" }
+            {
+              "id": "wf006-dl-01",
+              "name": "id",
+              "value": "={{ $('Decide').all()[0].json.deal_id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-dl-02",
+              "name": "produce_lot_id",
+              "value": "={{ $('Decide').all()[0].json.produce_lot_id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-dl-03",
+              "name": "buyer_id",
+              "value": "={{ $('Decide').all()[0].json.buyer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-dl-04",
+              "name": "current_status",
+              "value": "contacted",
+              "type": "string"
+            },
+            {
+              "id": "wf006-dl-05",
+              "name": "next_action",
+              "value": "Await buyer response",
+              "type": "string"
+            },
+            {
+              "id": "wf006-dl-06",
+              "name": "responsible_user",
+              "value": "={{ $('Decide').all()[0].json.approved_by }}",
+              "type": "string"
+            },
+            {
+              "id": "wf006-dl-07",
+              "name": "last_updated_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
           ]
         },
         "options": {}
@@ -386,17 +682,92 @@
         "columns": {
           "mappingMode": "autoMapInputData",
           "value": {},
-          "matchingColumns": [ "id" ],
+          "matchingColumns": [
+            "id"
+          ],
           "schema": [
-            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
-            { "id": "produce_lot_id", "displayName": "produce_lot_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "buyer_id", "displayName": "buyer_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "quoted_price", "displayName": "quoted_price", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "quoted_price_unit", "displayName": "quoted_price_unit", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "current_status", "displayName": "current_status", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "next_action", "displayName": "next_action", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "responsible_user", "displayName": "responsible_user", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "last_updated_at", "displayName": "last_updated_at", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "produce_lot_id",
+              "displayName": "produce_lot_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "buyer_id",
+              "displayName": "buyer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quoted_price",
+              "displayName": "quoted_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quoted_price_unit",
+              "displayName": "quoted_price_unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_status",
+              "displayName": "current_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_action",
+              "displayName": "next_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "responsible_user",
+              "displayName": "responsible_user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_updated_at",
+              "displayName": "last_updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
@@ -468,57 +839,167 @@
   "pinData": {},
   "connections": {
     "Process approval": {
-      "main": [ [ { "node": "Read approvals", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Read approvals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Read approvals": {
-      "main": [ [ { "node": "Find approval", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Find approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Find approval": {
-      "main": [ [ { "node": "Read buyer_matches", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Read buyer_matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Read buyer_matches": {
-      "main": [ [ { "node": "Decide", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Decide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Decide": {
-      "main": [ [ { "node": "Build approvals update", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Build approvals update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Build approvals update": {
-      "main": [ [ { "node": "Update approvals row", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Update approvals row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Update approvals row": {
-      "main": [ [ { "node": "Prepare audit log row", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Prepare audit log row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Prepare audit log row": {
-      "main": [ [ { "node": "Append to audit_log", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Append to audit_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Append to audit_log": {
-      "main": [ [ { "node": "Should send?", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Should send?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Should send?": {
       "main": [
-        [ { "node": "Is buyer outreach?", "type": "main", "index": 0 } ],
+        [
+          {
+            "node": "Is buyer outreach?",
+            "type": "main",
+            "index": 0
+          }
+        ],
         []
       ]
     },
     "Is buyer outreach?": {
       "main": [
-        [ { "node": "Build deal row", "type": "main", "index": 0 } ],
-        [ { "node": "Send farmer update", "type": "main", "index": 0 } ]
+        [
+          {
+            "node": "Build deal row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send farmer update",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Build deal row": {
-      "main": [ [ { "node": "Upsert deal_records", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Upsert deal_records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Upsert deal_records": {
-      "main": [ [ { "node": "Send buyer outreach", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Send buyer outreach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "pRCNEh6HdS9yFxXn",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
   },
-  "versionId": "wf006-0000-0000-0000-000000000001",
+  "versionId": "7179b86a-8ced-4f56-94d1-6639482d53ea",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"

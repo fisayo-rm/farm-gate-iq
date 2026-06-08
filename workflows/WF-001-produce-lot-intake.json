@@ -4,7 +4,7 @@
     {
       "parameters": {
         "formTitle": "FarmGateIQ — Produce Lot Intake",
-        "formDescription": "Enter your produce details in the free text box, or fill in the structured fields below — or both. Privacy: the details you submit (including the member name) are used only by the cooperative to register produce and match it to buyers. They are not shared with third parties without consent. (Nigeria Data Protection Act, 2023.)",
+        "formDescription": "Enter your produce details in the free text box, or fill in the structured fields below — or both. Privacy: the details you submit (including the member name) are used only by the cooperative to register produce and match it to buyers. They are not shared with third parties without consent. (Nigeria Data Protection Act, 2023.)<br><br>▶ This is the produce-intake step of a larger demo — see the full guided walkthrough and the live app at https://fisayo-rm.github.io/farm-gate-iq/demo/",
         "formFields": {
           "values": [
             {
@@ -53,7 +53,9 @@
               "fieldType": "checkbox",
               "fieldOptions": {
                 "values": [
-                  { "option": "I consent to these details being used by the cooperative to register produce and match it to buyers, in line with the privacy notice above." }
+                  {
+                    "option": "I consent to these details being used by the cooperative to register produce and match it to buyers, in line with the privacy notice above."
+                  }
                 ]
               },
               "requiredField": true
@@ -852,15 +854,18 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "pRCNEh6HdS9yFxXn",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
   },
-  "versionId": "368b25f8-6385-4876-a08b-481cff0eac5f",
+  "versionId": "52752339-49d1-4ce7-818a-a6ec481adc69",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+    "templateCredsSetupCompleted": true
   },
   "id": "Um4UP3BeBZoIHPG4",
   "tags": []

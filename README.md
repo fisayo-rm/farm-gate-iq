@@ -8,16 +8,20 @@ lot to a buyer database, drafts an outreach message, and routes it to the cooper
 manager for approval before anything is sent. Every AI step is logged. All data is
 synthetic.
 
+**Live app:** https://farmgateiq-demo-console.vercel.app  ·  **Interactive walkthrough:** https://fisayo-rm.github.io/farm-gate-iq/demo/
+
 ---
 
-## See it two ways
+## See it three ways
 
-1. **Interactive walkthrough (no setup, always works)** — a click-through tour of the whole
-   pipeline:
+1. **Interactive walkthrough (no setup, always works)** — a click-through, narrated tour of the
+   whole pipeline:
    **▶ https://fisayo-rm.github.io/farm-gate-iq/demo/**
-2. **Live run on our hosted instance (no setup either)** — click the form links in
-   *Live run* below to actually run the workflows on our n8n instance, and watch the
-   results land in the read-only workbook. No n8n account or install needed.
+2. **Live demo console (no setup)** — a guided web app: click one button per step, it runs the
+   **real** workflow on our n8n instance, and the proof appears from the live workbook:
+   **▶ https://farmgateiq-demo-console.vercel.app**
+3. **Run the workflows directly** — use the n8n form links in *Live run* below to trigger each
+   workflow yourself and watch the results land in the read-only workbook. No account needed.
 
 **Demo workbook (view-only):** https://docs.google.com/spreadsheets/d/1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg/edit?usp=sharing
 
@@ -53,11 +57,12 @@ Open: **https://fisayo-dmg.app.n8n.cloud/form/52355cf2-4ab5-433c-97f8-b7a8398589
 → Claude extracts the structured fields. **See it:** a new normalized row in `produce_lots`,
 and the event in `audit_log`.
 
-**Step 2 — Price summary, RAG-grounded (WF-003) — pre-run, just view.**
-We run this one ahead of time. It computes the cooperative's own min/max/median **in code**,
-then retrieves public market context (FEWS NET, NBS, FAO) from Pinecone and has Claude write
-a **cited** summary. **See it:** the `farmer_update` row in `approvals` — the price range, a
-cited market line, the flagged outliers, and a confidence level.
+**Step 2 — Price summary, RAG-grounded (WF-003).**
+Open (or GET) **https://fisayo-dmg.app.n8n.cloud/webhook/wf003-price-summary** to run it (it
+takes no input). It computes the cooperative's own min/max/median **in code**, then retrieves
+public market context (FEWS NET, NBS, FAO) from Pinecone and has Claude write a **cited**
+summary. **See it:** a new `farmer_update` row in `approvals` — the price range, a cited
+market line, the flagged outliers, and a confidence level.
 
 **Step 3 — Buyer matching (WF-005).**
 Open: **https://fisayo-dmg.app.n8n.cloud/form/cc6fe384-b96c-4647-80ce-39ca1edbf691** and enter lot id `lot_001`.

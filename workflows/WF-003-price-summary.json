@@ -598,6 +598,39 @@
           "name": "FarmGateIQ Gmail"
         }
       }
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "wf003-price-summary",
+        "responseMode": "responseNode",
+        "options": {
+          "responseData": "{\"status\":\"started\",\"note\":\"WF-003 price summary is running; the farmer_update row will appear in the approvals tab shortly.\"}"
+        }
+      },
+      "id": "2ee7d734-142e-47f7-9286-21de2c1283cb",
+      "name": "Run via webhook (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        13600,
+        2784
+      ],
+      "webhookId": "adae653e-258b-4662-8420-4e716e21d06a"
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      },
+      "id": "7c0a9d2e-respond-summary-0003",
+      "name": "Respond with summary",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        14576,
+        2820
+      ]
     }
   ],
   "pinData": {},
@@ -691,6 +724,11 @@
             "node": "Assemble approval row",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Respond with summary",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -738,21 +776,33 @@
           }
         ]
       ]
+    },
+    "Run via webhook (GET)": {
+      "main": [
+        [
+          {
+            "node": "Read price_entries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "timeSavedMode": "fixed",
     "errorWorkflow": "pRCNEh6HdS9yFxXn",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": true
   },
-  "versionId": "40217fd6-237a-4e75-a278-544c62918a8b",
+  "versionId": "577e7d59-9247-42c9-bf26-5bb616fe5a52",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "33b377893e02107d8093583c8d70bb727f721ce98e4545e888ca140e1058bc51"
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
   },
   "id": "jLI0pWZQXkdgCD00",
   "tags": []
