@@ -13,84 +13,181 @@
       "name": "Run demo reset",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [0, 192]
+      "position": [
+        0,
+        192
+      ]
     },
     {
       "id": "43bafed2-0ac6-4d1a-a2c3-d5ba58046883",
       "name": "Clear audit_log",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [224, 192],
+      "position": [
+        224,
+        192
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "clear",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "audit_log" },
-        "clear": "wholeSheet", "keepFirstRow": true
+        "resource": "sheet",
+        "operation": "clear",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "audit_log"
+        },
+        "clear": "wholeSheet",
+        "keepFirstRow": true
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "a0956f6d-1133-4273-b7c1-f2f838737d7a",
       "name": "Clear approvals",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [448, 192],
+      "position": [
+        448,
+        192
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "clear",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "approvals" },
-        "clear": "wholeSheet", "keepFirstRow": true
+        "resource": "sheet",
+        "operation": "clear",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "approvals"
+        },
+        "clear": "wholeSheet",
+        "keepFirstRow": true
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "de86ee8f-56b2-4390-a2f1-c48364a3e306",
       "name": "Clear deal_records",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [672, 192],
+      "position": [
+        672,
+        192
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "clear",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "deal_records" },
-        "clear": "wholeSheet", "keepFirstRow": true
+        "resource": "sheet",
+        "operation": "clear",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "deal_records"
+        },
+        "clear": "wholeSheet",
+        "keepFirstRow": true
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "71587d97-6b63-4ec7-8778-8134b9b70a95",
       "name": "Clear buyer_matches",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [896, 192],
+      "position": [
+        896,
+        192
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "clear",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "buyer_matches" },
-        "clear": "wholeSheet", "keepFirstRow": true
+        "resource": "sheet",
+        "operation": "clear",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "buyer_matches"
+        },
+        "clear": "wholeSheet",
+        "keepFirstRow": true
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "3b529339-8831-4b4b-a1c8-9d2a2e2ac431",
       "name": "Read produce_lots",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [1120, 0],
+      "position": [
+        1120,
+        0
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "read",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "produce_lots" },
-        "options": { "returnAllMatches": "returnAllMatches" }
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "produce_lots"
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "4a2697db-afd8-4be4-8724-d60f1373ae8c",
       "name": "Filter produce demo rows",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1344, 0],
+      "position": [
+        1344,
+        0
+      ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "jsCode": "const items = $input.all();\nconst demoRows = items.filter(i => !/^lot_0\\d{2}$/.test(String(i.json.id || '')));\ndemoRows.sort((a, b) => (b.json.row_number || 0) - (a.json.row_number || 0));\nreturn demoRows.map(i => ({ json: { row_number: i.json.row_number } }));"
@@ -101,37 +198,76 @@
       "name": "Delete produce demo row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [1568, 0],
+      "position": [
+        1568,
+        0
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "delete",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "produce_lots" },
+        "resource": "sheet",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "produce_lots"
+        },
         "toDelete": "rows",
         "startIndex": "={{ $json.row_number }}",
         "numberToDelete": 1
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "c7e683e4-b1e0-4214-9b2f-405c45629f31",
       "name": "Read price_entries",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [1120, 192],
+      "position": [
+        1120,
+        192
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "read",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "price_entries" },
-        "options": { "returnAllMatches": "returnAllMatches" }
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "price_entries"
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "c416708c-dfee-4771-8287-36aa48a48481",
       "name": "Filter price demo rows",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1344, 192],
+      "position": [
+        1344,
+        192
+      ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "jsCode": "const items = $input.all();\nconst demoRows = items.filter(i => !/^price_0\\d{2}$/.test(String(i.json.id || '')));\ndemoRows.sort((a, b) => (b.json.row_number || 0) - (a.json.row_number || 0));\nreturn demoRows.map(i => ({ json: { row_number: i.json.row_number } }));"
@@ -142,37 +278,76 @@
       "name": "Delete price demo row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [1568, 192],
+      "position": [
+        1568,
+        192
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "delete",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "price_entries" },
+        "resource": "sheet",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "price_entries"
+        },
         "toDelete": "rows",
         "startIndex": "={{ $json.row_number }}",
         "numberToDelete": 1
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "320e5e63-d306-4965-aa3f-6f673666302f",
       "name": "Read buyers",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [1120, 384],
+      "position": [
+        1120,
+        384
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "read",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "buyers" },
-        "options": { "returnAllMatches": "returnAllMatches" }
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "buyers"
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches"
+        }
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     },
     {
       "id": "3ac94b31-a71d-4551-af40-4e53635538e5",
       "name": "Filter buyer demo rows",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1344, 384],
+      "position": [
+        1344,
+        384
+      ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "jsCode": "const items = $input.all();\nconst demoRows = items.filter(i => !/^buyer_0\\d{2}$/.test(String(i.json.id || '')));\ndemoRows.sort((a, b) => (b.json.row_number || 0) - (a.json.row_number || 0));\nreturn demoRows.map(i => ({ json: { row_number: i.json.row_number } }));"
@@ -183,55 +358,166 @@
       "name": "Delete buyer demo row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [1568, 384],
+      "position": [
+        1568,
+        384
+      ],
       "parameters": {
-        "resource": "sheet", "operation": "delete",
-        "documentId": { "__rl": true, "mode": "id", "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg" },
-        "sheetName": { "__rl": true, "mode": "name", "value": "buyers" },
+        "resource": "sheet",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1q2y6vbxwNKHYlZrfSNN6qSmJjjB1Ea_eKhbsPv-d0Dg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "buyers"
+        },
         "toDelete": "rows",
         "startIndex": "={{ $json.row_number }}",
         "numberToDelete": 1
       },
-      "credentials": { "googleSheetsOAuth2Api": { "id": "yzReTqguKip3S2yU", "name": "FarmGateIQ Google Sheets" } }
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6fgPX3DIeadPIyK8",
+          "name": "FarmGateIQ Google Sheets"
+        }
+      }
     }
   ],
   "connections": {
     "Run demo reset": {
-      "main": [ [ { "node": "Clear audit_log", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Clear audit_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Clear audit_log": {
-      "main": [ [ { "node": "Clear approvals", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Clear approvals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Clear approvals": {
-      "main": [ [ { "node": "Clear deal_records", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Clear deal_records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Clear deal_records": {
-      "main": [ [ { "node": "Clear buyer_matches", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Clear buyer_matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Clear buyer_matches": {
-      "main": [ [
-        { "node": "Read produce_lots", "type": "main", "index": 0 },
-        { "node": "Read price_entries", "type": "main", "index": 0 },
-        { "node": "Read buyers", "type": "main", "index": 0 }
-      ] ]
+      "main": [
+        [
+          {
+            "node": "Read produce_lots",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read price_entries",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read buyers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Read produce_lots": {
-      "main": [ [ { "node": "Filter produce demo rows", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Filter produce demo rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Filter produce demo rows": {
-      "main": [ [ { "node": "Delete produce demo row", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Delete produce demo row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Read price_entries": {
-      "main": [ [ { "node": "Filter price demo rows", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Filter price demo rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Filter price demo rows": {
-      "main": [ [ { "node": "Delete price demo row", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Delete price demo row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Read buyers": {
-      "main": [ [ { "node": "Filter buyer demo rows", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Filter buyer demo rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Filter buyer demo rows": {
-      "main": [ [ { "node": "Delete buyer demo row", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Delete buyer demo row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {},

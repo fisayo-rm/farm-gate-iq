@@ -38,7 +38,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -80,7 +80,7 @@
       ],
       "credentials": {
         "pineconeApi": {
-          "id": "3OGW85ZZOkPv0zG8",
+          "id": "qseVyyfre7UOjvyV",
           "name": "FarmGateIQ Pinecone"
         }
       }
@@ -99,7 +99,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "id": "0UL419sw5uZkY2pZ",
+          "id": "udwLXrFJmHmmffoW",
           "name": "FarmGateIQ OpenAI"
         }
       }
@@ -151,8 +151,8 @@
       ],
       "credentials": {
         "anthropicApi": {
-          "id": "UltMUw3dgYtRgjfO",
-          "name": "FarmGateIQ Anthropic"
+          "id": "AJlbHyd94uQQBZ92",
+          "name": "dmg_anthropic_account"
         }
       }
     },
@@ -375,7 +375,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -571,7 +571,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -579,12 +579,12 @@
     {
       "parameters": {
         "sendTo": "fisayo.dmg@gmail.com",
-        "subject": "={{ 'FarmGateIQ — Maize price summary ready for approval (' + $('Parse summary output').all()[0].json.data_confidence + ' confidence)' }}",
+        "subject": "={{ 'FarmGateIQ \u2014 Maize price summary ready for approval (' + $('Parse summary output').all()[0].json.data_confidence + ' confidence)' }}",
         "message": "={{ '<p><b>A maize price summary has been generated and is awaiting your approval before any farmer broadcast.</b></p>' + '<p>' + $('Parse summary output').all()[0].json.summary_text + '</p>' + '<hr><p><b>Basis</b><br>Entries used: ' + $('Parse summary output').all()[0].json.count + '<br>Source types: ' + $('Parse summary output').all()[0].json.source_list + '<br>Outliers flagged: ' + $('Parse summary output').all()[0].json.outlier_count + '<br>Data confidence: ' + $('Parse summary output').all()[0].json.data_confidence + '</p>' + '<p>Open the <b>approvals</b> tab in FarmGateIQ Demo to approve, edit, or reject this summary.</p>' }}",
         "options": {}
       },
       "id": "9a9a59cc-7bf0-4f53-aa97-c6e1ee8d2269",
-      "name": "Notify manager — summary for approval",
+      "name": "Notify manager \u2014 summary for approval",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
@@ -594,7 +594,7 @@
       "webhookId": "f4c7a1b9-8e22-4c3d-9a01-bb0102030406",
       "credentials": {
         "gmailOAuth2": {
-          "id": "CzCD5Wsv5f2rbOIk",
+          "id": "2r8GogZEDpu5efcc",
           "name": "FarmGateIQ Gmail"
         }
       }
@@ -770,7 +770,7 @@
       "main": [
         [
           {
-            "node": "Notify manager — summary for approval",
+            "node": "Notify manager \u2014 summary for approval",
             "type": "main",
             "index": 0
           }

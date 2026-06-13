@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "FarmGateIQ — Find Buyers for a Lot",
+        "formTitle": "FarmGateIQ \u2014 Find Buyers for a Lot",
         "formDescription": "Enter the produce lot ID to score buyers and draft outreach for the top matches.",
         "formFields": {
           "values": [
@@ -53,7 +53,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -98,7 +98,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -150,8 +150,8 @@
       ],
       "credentials": {
         "anthropicApi": {
-          "id": "UltMUw3dgYtRgjfO",
-          "name": "FarmGateIQ Anthropic"
+          "id": "AJlbHyd94uQQBZ92",
+          "name": "dmg_anthropic_account"
         }
       }
     },
@@ -344,7 +344,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -491,7 +491,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -687,7 +687,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -695,12 +695,12 @@
     {
       "parameters": {
         "sendTo": "fisayo.dmg@gmail.com",
-        "subject": "={{ 'FarmGateIQ — ' + $('Parse matches').all().length + ' buyer matches for lot ' + $('Select lot').all()[0].json.id }}",
-        "message": "={{ '<p><b>Buyer matches generated for lot ' + $('Select lot').all()[0].json.id + '</b> (' + $('Select lot').all()[0].json.commodity + ', ' + $('Select lot').all()[0].json.quantity + ' ' + $('Select lot').all()[0].json.unit + ' in ' + $('Select lot').all()[0].json.location + ')</p>' + '<p><b>Ranked matches:</b></p><ul>' + $('Assemble approval row').all()[0].json.matches_html + '</ul>' + '<p><b>Top-match outreach draft (pending your approval — nothing has been sent):</b></p><p>' + $('Assemble approval row').all()[0].json.original_content + '</p>' + '<p>Review the <b>buyer_matches</b> and <b>approvals</b> tabs in FarmGateIQ Demo before any outreach.</p>' }}",
+        "subject": "={{ 'FarmGateIQ \u2014 ' + $('Parse matches').all().length + ' buyer matches for lot ' + $('Select lot').all()[0].json.id }}",
+        "message": "={{ '<p><b>Buyer matches generated for lot ' + $('Select lot').all()[0].json.id + '</b> (' + $('Select lot').all()[0].json.commodity + ', ' + $('Select lot').all()[0].json.quantity + ' ' + $('Select lot').all()[0].json.unit + ' in ' + $('Select lot').all()[0].json.location + ')</p>' + '<p><b>Ranked matches:</b></p><ul>' + $('Assemble approval row').all()[0].json.matches_html + '</ul>' + '<p><b>Top-match outreach draft (pending your approval \u2014 nothing has been sent):</b></p><p>' + $('Assemble approval row').all()[0].json.original_content + '</p>' + '<p>Review the <b>buyer_matches</b> and <b>approvals</b> tabs in FarmGateIQ Demo before any outreach.</p>' }}",
         "options": {}
       },
       "id": "e5d4c3b2-eeee-4d5e-9f04-400000000014",
-      "name": "Notify manager — matches ready",
+      "name": "Notify manager \u2014 matches ready",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
@@ -710,7 +710,7 @@
       "webhookId": "b9c0d1e2-5c62-4a9d-9eaa-ee0102030409",
       "credentials": {
         "gmailOAuth2": {
-          "id": "CzCD5Wsv5f2rbOIk",
+          "id": "2r8GogZEDpu5efcc",
           "name": "FarmGateIQ Gmail"
         }
       }
@@ -865,7 +865,7 @@
       "main": [
         [
           {
-            "node": "Notify manager — matches ready",
+            "node": "Notify manager \u2014 matches ready",
             "type": "main",
             "index": 0
           }

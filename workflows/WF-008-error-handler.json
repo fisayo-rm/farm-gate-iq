@@ -43,7 +43,7 @@
       "webhookId": "b5c6d7e8-1a22-4a5d-9b00-001112030415",
       "credentials": {
         "gmailOAuth2": {
-          "id": "CzCD5Wsv5f2rbOIk",
+          "id": "2r8GogZEDpu5efcc",
           "name": "FarmGateIQ Gmail"
         }
       }
@@ -52,10 +52,26 @@
   "pinData": {},
   "connections": {
     "Error Trigger": {
-      "main": [ [ { "node": "Build alert", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Build alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Build alert": {
-      "main": [ [ { "node": "Send admin alert", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Send admin alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,

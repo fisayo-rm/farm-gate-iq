@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "FarmGateIQ — Log Buyer Response",
-        "formDescription": "Record a buyer's reply. The system classifies it and updates the deal tracker. It does NOT reply to the buyer — any reply goes through approval.",
+        "formTitle": "FarmGateIQ \u2014 Log Buyer Response",
+        "formDescription": "Record a buyer's reply. The system classifies it and updates the deal tracker. It does NOT reply to the buyer \u2014 any reply goes through approval.",
         "formFields": {
           "values": [
             {
@@ -84,8 +84,8 @@
       ],
       "credentials": {
         "anthropicApi": {
-          "id": "UltMUw3dgYtRgjfO",
-          "name": "FarmGateIQ Anthropic"
+          "id": "AJlbHyd94uQQBZ92",
+          "name": "dmg_anthropic_account"
         }
       }
     },
@@ -281,7 +281,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -477,7 +477,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -485,12 +485,12 @@
     {
       "parameters": {
         "sendTo": "fisayo.dmg@gmail.com",
-        "subject": "={{ 'FarmGateIQ — Buyer ' + $('Parse classification').all()[0].json.buyer_id + ' replied: ' + $('Parse classification').all()[0].json.classified_status + ($('Parse classification').all()[0].json.suspicious === 'TRUE' ? ' [SUSPICIOUS]' : '') }}",
-        "message": "={{ '<p><b>Buyer reply classified.</b></p>' + '<p>Buyer: ' + $('Parse classification').all()[0].json.buyer_id + '<br>Lot: ' + $('Parse classification').all()[0].json.lot_id + '<br>Classification: <b>' + $('Parse classification').all()[0].json.classified_status + '</b><br>Deal status now: ' + $('Parse classification').all()[0].json.deal_status + '</p>' + ($('Parse classification').all()[0].json.suspicious === 'TRUE' ? '<p style=\"color:#b00\"><b>\\u26A0 Flagged suspicious — do not act without verification.</b></p>' : '') + '<p><b>Summary:</b> ' + $('Parse classification').all()[0].json.summary + '</p>' + '<p><b>Recommended next action:</b> ' + $('Parse classification').all()[0].json.recommended_next_action + '</p>' + '<hr><p style=\"color:#888\">Any reply to the buyer must be drafted and approved via the approval workflow before sending.</p>' }}",
+        "subject": "={{ 'FarmGateIQ \u2014 Buyer ' + $('Parse classification').all()[0].json.buyer_id + ' replied: ' + $('Parse classification').all()[0].json.classified_status + ($('Parse classification').all()[0].json.suspicious === 'TRUE' ? ' [SUSPICIOUS]' : '') }}",
+        "message": "={{ '<p><b>Buyer reply classified.</b></p>' + '<p>Buyer: ' + $('Parse classification').all()[0].json.buyer_id + '<br>Lot: ' + $('Parse classification').all()[0].json.lot_id + '<br>Classification: <b>' + $('Parse classification').all()[0].json.classified_status + '</b><br>Deal status now: ' + $('Parse classification').all()[0].json.deal_status + '</p>' + ($('Parse classification').all()[0].json.suspicious === 'TRUE' ? '<p style=\"color:#b00\"><b>\\u26A0 Flagged suspicious \u2014 do not act without verification.</b></p>' : '') + '<p><b>Summary:</b> ' + $('Parse classification').all()[0].json.summary + '</p>' + '<p><b>Recommended next action:</b> ' + $('Parse classification').all()[0].json.recommended_next_action + '</p>' + '<hr><p style=\"color:#888\">Any reply to the buyer must be drafted and approved via the approval workflow before sending.</p>' }}",
         "options": {}
       },
       "id": "a7b2000a-aaaa-4a70-9b06-600000000010",
-      "name": "Notify manager — response classified",
+      "name": "Notify manager \u2014 response classified",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
@@ -500,7 +500,7 @@
       "webhookId": "a4b5c6d7-0a12-4f4c-9aff-001112030414",
       "credentials": {
         "gmailOAuth2": {
-          "id": "CzCD5Wsv5f2rbOIk",
+          "id": "2r8GogZEDpu5efcc",
           "name": "FarmGateIQ Gmail"
         }
       }
@@ -600,7 +600,7 @@
       "main": [
         [
           {
-            "node": "Notify manager — response classified",
+            "node": "Notify manager \u2014 response classified",
             "type": "main",
             "index": 0
           }

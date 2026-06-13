@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "FarmGateIQ — Produce Lot Intake",
-        "formDescription": "Enter your produce details in the free text box, or fill in the structured fields below — or both. Privacy: the details you submit (including the member name) are used only by the cooperative to register produce and match it to buyers. They are not shared with third parties without consent. (Nigeria Data Protection Act, 2023.)<br><br>▶ This is the produce-intake step of a larger demo — see the full guided walkthrough and the live app at https://fisayo-rm.github.io/farm-gate-iq/demo/",
+        "formTitle": "FarmGateIQ \u2014 Produce Lot Intake",
+        "formDescription": "Enter your produce details in the free text box, or fill in the structured fields below \u2014 or both. Privacy: the details you submit (including the member name) are used only by the cooperative to register produce and match it to buyers. They are not shared with third parties without consent. (Nigeria Data Protection Act, 2023.)<br><br>\u25b6 This is the produce-intake step of a larger demo \u2014 see the full guided walkthrough and the live app at https://fisayo-rm.github.io/farm-gate-iq/demo/",
         "formFields": {
           "values": [
             {
@@ -76,7 +76,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all();\nconst item = items[0].json;\n\nif (!item['Member name'] || String(item['Member name']).trim() === '') {\n  throw new Error('Missing required field: Member name');\n}\n\nconst hasFreeText = !!(item['Free text submission'] && String(item['Free text submission']).trim());\nconst hasCommodity = !!(item['Commodity'] && String(item['Commodity']).trim());\n\nif (!hasFreeText && !hasCommodity) {\n  throw new Error('Please provide either a free text description or fill in the Commodity field.');\n}\n\nconst parts = [];\nparts.push('You are processing a produce lot submission for a Nigerian farmer cooperative in Kaduna State.');\nparts.push('The field officer may have provided a free text description, structured fields, or both.');\nparts.push('Extract and normalize everything available into a JSON object.');\nparts.push('');\nparts.push('FREE TEXT (primary input if provided):');\nparts.push(item['Free text submission'] || 'none');\nparts.push('');\nparts.push('STRUCTURED FIELDS (may be empty — use to supplement or confirm free text):');\nparts.push('Commodity: ' + (item['Commodity'] || 'not provided'));\nparts.push('Quantity: ' + (item['Quantity'] || 'not provided') + ' ' + (item['Unit'] || ''));\nparts.push('Location: ' + (item['Location'] || 'not provided'));\nparts.push('Availability date: ' + (item['Availability date'] || 'not provided'));\nparts.push('Asking price: ' + (item['Asking price'] || 'not provided') + ' per bag');\nparts.push('Quality notes: ' + (item['Quality notes'] || 'not provided'));\nparts.push('');\nparts.push('NORMALIZATION RULES:');\nparts.push('1. Commodity: corn, masara, yellow maize, white maize -> maize. Keep unknown crops as-is.');\nparts.push('2. Unit: sack/sacks -> bag. For mudu or paint bucket: keep original but set needs_review true.');\nparts.push('3. Location: if the LGA is in Kaduna State (Zaria, Sabon Gari, Giwa, Makarfi, Ikara, Kubau), append a comma and Kaduna to the location.');\nparts.push('4. Date: convert to YYYY-MM-DD. Assume year 2026 if year not stated.');\nparts.push('5. Confidence: high if all fields extracted cleanly; medium if minor normalizations or one field missing; low if key fields (location, quantity, commodity) are missing.');\nparts.push('6. Set needs_review to true if confidence is low, unit cannot be normalized, or price is below 30000 or above 80000.');\nparts.push('7. List any fields you could not extract in missing_fields.');\nparts.push('');\nparts.push('REQUIRED OUTPUT FORMAT:');\nparts.push('Return ONLY a valid JSON object with no explanation and no markdown code fences.');\nparts.push('Include these fields: commodity (string), raw_commodity (string — the exact commodity name as it appeared in the input before normalization, e.g. \"corn\" not \"maize\"; if already standard write the same as commodity), raw_quantity_text (string — the quantity and unit exactly as written in the input, e.g. \"120 bags\", \"about 80 sacks\", \"50 bags\"), quantity (number or null), unit (string), location (string),');\nparts.push('availability_date (YYYY-MM-DD or empty string), quality_notes (string),');\nparts.push('asking_price (number or null), asking_price_unit (string, default per bag), confidence (high or medium or low),');\nparts.push('needs_review (boolean), missing_fields (array of strings), normalization_notes (string).');\n\nconst prompt = parts.join('\\n');\n\nreturn [{ json: Object.assign({}, item, { prompt: prompt }) }];"
+        "jsCode": "const items = $input.all();\nconst item = items[0].json;\n\nif (!item['Member name'] || String(item['Member name']).trim() === '') {\n  throw new Error('Missing required field: Member name');\n}\n\nconst hasFreeText = !!(item['Free text submission'] && String(item['Free text submission']).trim());\nconst hasCommodity = !!(item['Commodity'] && String(item['Commodity']).trim());\n\nif (!hasFreeText && !hasCommodity) {\n  throw new Error('Please provide either a free text description or fill in the Commodity field.');\n}\n\nconst parts = [];\nparts.push('You are processing a produce lot submission for a Nigerian farmer cooperative in Kaduna State.');\nparts.push('The field officer may have provided a free text description, structured fields, or both.');\nparts.push('Extract and normalize everything available into a JSON object.');\nparts.push('');\nparts.push('FREE TEXT (primary input if provided):');\nparts.push(item['Free text submission'] || 'none');\nparts.push('');\nparts.push('STRUCTURED FIELDS (may be empty \u2014 use to supplement or confirm free text):');\nparts.push('Commodity: ' + (item['Commodity'] || 'not provided'));\nparts.push('Quantity: ' + (item['Quantity'] || 'not provided') + ' ' + (item['Unit'] || ''));\nparts.push('Location: ' + (item['Location'] || 'not provided'));\nparts.push('Availability date: ' + (item['Availability date'] || 'not provided'));\nparts.push('Asking price: ' + (item['Asking price'] || 'not provided') + ' per bag');\nparts.push('Quality notes: ' + (item['Quality notes'] || 'not provided'));\nparts.push('');\nparts.push('NORMALIZATION RULES:');\nparts.push('1. Commodity: corn, masara, yellow maize, white maize -> maize. Keep unknown crops as-is.');\nparts.push('2. Unit: sack/sacks -> bag. For mudu or paint bucket: keep original but set needs_review true.');\nparts.push('3. Location: if the LGA is in Kaduna State (Zaria, Sabon Gari, Giwa, Makarfi, Ikara, Kubau), append a comma and Kaduna to the location.');\nparts.push('4. Date: convert to YYYY-MM-DD. Assume year 2026 if year not stated.');\nparts.push('5. Confidence: high if all fields extracted cleanly; medium if minor normalizations or one field missing; low if key fields (location, quantity, commodity) are missing.');\nparts.push('6. Set needs_review to true if confidence is low, unit cannot be normalized, or price is below 30000 or above 80000.');\nparts.push('7. List any fields you could not extract in missing_fields.');\nparts.push('');\nparts.push('REQUIRED OUTPUT FORMAT:');\nparts.push('Return ONLY a valid JSON object with no explanation and no markdown code fences.');\nparts.push('Include these fields: commodity (string), raw_commodity (string \u2014 the exact commodity name as it appeared in the input before normalization, e.g. \"corn\" not \"maize\"; if already standard write the same as commodity), raw_quantity_text (string \u2014 the quantity and unit exactly as written in the input, e.g. \"120 bags\", \"about 80 sacks\", \"50 bags\"), quantity (number or null), unit (string), location (string),');\nparts.push('availability_date (YYYY-MM-DD or empty string), quality_notes (string),');\nparts.push('asking_price (number or null), asking_price_unit (string, default per bag), confidence (high or medium or low),');\nparts.push('needs_review (boolean), missing_fields (array of strings), normalization_notes (string).');\n\nconst prompt = parts.join('\\n');\n\nreturn [{ json: Object.assign({}, item, { prompt: prompt }) }];"
       },
       "id": "14b76d7c-16d0-4a7e-b1f5-4e36d2cd45b5",
       "name": "Validate and build prompt",
@@ -121,8 +121,8 @@
       ],
       "credentials": {
         "anthropicApi": {
-          "id": "UltMUw3dgYtRgjfO",
-          "name": "FarmGateIQ Anthropic"
+          "id": "AJlbHyd94uQQBZ92",
+          "name": "dmg_anthropic_account"
         }
       }
     },
@@ -452,7 +452,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -648,7 +648,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -690,12 +690,12 @@
     {
       "parameters": {
         "sendTo": "fisayo.dmg@gmail.com",
-        "subject": "={{ 'FarmGateIQ — Lot needs review: ' + $('Assemble produce lot row').all()[0].json.raw_commodity + ' from ' + $('Assemble produce lot row').all()[0].json.member_name }}",
+        "subject": "={{ 'FarmGateIQ \u2014 Lot needs review: ' + $('Assemble produce lot row').all()[0].json.raw_commodity + ' from ' + $('Assemble produce lot row').all()[0].json.member_name }}",
         "message": "={{ '<p><b>A produce lot submission requires your review.</b></p><p>Member: ' + $('Assemble produce lot row').all()[0].json.member_name + '<br>Commodity submitted: ' + $('Assemble produce lot row').all()[0].json.raw_commodity + '<br>Normalized to: ' + $('Assemble produce lot row').all()[0].json.commodity + '<br>Quantity: ' + $('Assemble produce lot row').all()[0].json.quantity + ' ' + $('Assemble produce lot row').all()[0].json.unit + '<br>Location: ' + $('Assemble produce lot row').all()[0].json.location + '<br>Confidence: ' + $('Assemble produce lot row').all()[0].json.confidence + '<br>Notes: ' + $('Assemble produce lot row').all()[0].json.normalization_notes + '</p><p>Please check the produce_lots tab in FarmGateIQ Demo to review this submission.</p>' }}",
         "options": {}
       },
       "id": "00346185-b717-41c3-9f50-c18fd85115ab",
-      "name": "Notify — review needed",
+      "name": "Notify \u2014 review needed",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
@@ -705,7 +705,7 @@
       "webhookId": "7d733caa-7b3d-4d7a-96e7-3a837117aa13",
       "credentials": {
         "gmailOAuth2": {
-          "id": "CzCD5Wsv5f2rbOIk",
+          "id": "2r8GogZEDpu5efcc",
           "name": "FarmGateIQ Gmail"
         }
       }
@@ -713,12 +713,12 @@
     {
       "parameters": {
         "sendTo": "fisayo.dmg@gmail.com",
-        "subject": "={{ 'FarmGateIQ — New lot: ' + $('Assemble produce lot row').all()[0].json.commodity + ' from ' + $('Assemble produce lot row').all()[0].json.member_name }}",
+        "subject": "={{ 'FarmGateIQ \u2014 New lot: ' + $('Assemble produce lot row').all()[0].json.commodity + ' from ' + $('Assemble produce lot row').all()[0].json.member_name }}",
         "message": "={{ '<p><b>A new produce lot has been submitted and normalized.</b></p><p>Member: ' + $('Assemble produce lot row').all()[0].json.member_name + '<br>Commodity: ' + $('Assemble produce lot row').all()[0].json.commodity + '<br>Quantity: ' + $('Assemble produce lot row').all()[0].json.quantity + ' ' + $('Assemble produce lot row').all()[0].json.unit + '<br>Location: ' + $('Assemble produce lot row').all()[0].json.location + '<br>Asking price: NGN ' + $('Assemble produce lot row').all()[0].json.asking_price + ' per bag<br>Availability date: ' + $('Assemble produce lot row').all()[0].json.availability_date + '<br>Confidence: ' + $('Assemble produce lot row').all()[0].json.confidence_score + '</p>' }}",
         "options": {}
       },
       "id": "444455df-9c8c-4ae8-ae7e-e5e7f58a6e5b",
-      "name": "Notify — new lot received",
+      "name": "Notify \u2014 new lot received",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
@@ -728,7 +728,7 @@
       "webhookId": "64576375-4c8d-447c-83a5-c7746e7b1da5",
       "credentials": {
         "gmailOAuth2": {
-          "id": "CzCD5Wsv5f2rbOIk",
+          "id": "2r8GogZEDpu5efcc",
           "name": "FarmGateIQ Gmail"
         }
       }
@@ -839,14 +839,14 @@
       "main": [
         [
           {
-            "node": "Notify — review needed",
+            "node": "Notify \u2014 review needed",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Notify — new lot received",
+            "node": "Notify \u2014 new lot received",
             "type": "main",
             "index": 0
           }

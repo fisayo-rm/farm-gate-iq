@@ -51,21 +51,21 @@ writes to the demo workbook. **Open the view-only workbook side by side to watch
 appear.** Bag prices are per **100kg bag**.
 
 **Step 1 — Submit a produce lot (WF-001).**
-Open: **https://fisayo-dmg.app.n8n.cloud/form/52355cf2-4ab5-433c-97f8-b7a839858983** and paste:
+Open: **https://fisayo-aaa.app.n8n.cloud/form/af1c7b20-c138-447d-a39c-6eb4c5bd0e3a** and paste:
 > `I have 120 bags of dry maize in Zaria available from 15 June. Asking 48000 per bag.`
 
 → Claude extracts the structured fields. **See it:** a new normalized row in `produce_lots`,
 and the event in `audit_log`.
 
 **Step 2 — Price summary, RAG-grounded (WF-003).**
-Open (or GET) **https://fisayo-dmg.app.n8n.cloud/webhook/wf003-price-summary** to run it (it
+Open (or GET) **https://fisayo-aaa.app.n8n.cloud/webhook/wf003-price-summary** to run it (it
 takes no input). It computes the cooperative's own min/max/median **in code**, then retrieves
 public market context (FEWS NET, NBS, FAO) from Pinecone and has Claude write a **cited**
 summary. **See it:** a new `farmer_update` row in `approvals` — the price range, a cited
 market line, the flagged outliers, and a confidence level.
 
 **Step 3 — Buyer matching (WF-005).**
-Open: **https://fisayo-dmg.app.n8n.cloud/form/cc6fe384-b96c-4647-80ce-39ca1edbf691** and enter lot id `lot_001`.
+Open: **https://fisayo-aaa.app.n8n.cloud/form/468bc201-cbcd-4562-af13-6fa5926b8b8f** and enter lot id `lot_001`.
 A fixed rule-based formula scores buyers (the LLM explains, never decides); blocked buyers
 are excluded, unverified ones get risk flags, and the draft references each buyer's stated
 requirements. **See it:** up to 3 ranked rows in `buyer_matches` and a pending
@@ -76,13 +76,13 @@ requirements. **See it:** up to 3 ranked rows in `buyer_matches` and a pending
 `buyer_outreach` row in `approvals` still shows `decision = pending`.
 
 **Step 5 — Approve & send (WF-006).**
-Open: **https://fisayo-dmg.app.n8n.cloud/form/1de970a9-daa1-47ab-873a-937d21609050**, paste the approval id from the `approvals` row,
+Open: **https://fisayo-aaa.app.n8n.cloud/form/f16b552b-b55e-4b45-98d2-fa651d3bb531**, paste the approval id from the `approvals` row,
 and choose `approve`. **See it:** the `approvals` row flips to `approved` (the original draft
 is kept beside the final version), and a new `deal_records` row appears as `contacted`. (The
 simulated outreach email goes to our inbox, with the intended buyer shown in the body.)
 
 **Step 6 — Buyer response (WF-007).**
-Open: **https://fisayo-dmg.app.n8n.cloud/form/e8c6d9ef-d2a7-4f13-8f36-f1a54bb7103e**, enter buyer `buyer_001`, lot `lot_001`, and a
+Open: **https://fisayo-aaa.app.n8n.cloud/form/623af972-e492-4947-9adb-76e2c563a036**, enter buyer `buyer_001`, lot `lot_001`, and a
 reply like *"Yes, interested — can we inspect on June 18 at Zaria?"* Claude classifies it.
 **See it:** `deal_records` advances to `interested` with a recommended next action.
 (Suspicious replies are flagged and do **not** advance.)

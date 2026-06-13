@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "FarmGateIQ — Produce Lot Intake (Test)",
+        "formTitle": "FarmGateIQ \u2014 Produce Lot Intake (Test)",
         "formDescription": "Fill in the fields below to register a produce lot for testing.",
         "formFields": {
           "values": [
@@ -374,7 +374,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }

@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "FarmGateIQ — Process Approval",
+        "formTitle": "FarmGateIQ \u2014 Process Approval",
         "formDescription": "Act on a pending approval. Copy the approval ID from the approvals tab. Nothing is sent unless you approve or edit-and-approve.",
         "formFields": {
           "values": [
@@ -39,7 +39,7 @@
             {
               "fieldLabel": "Edited message",
               "fieldType": "textarea",
-              "placeholder": "Only needed for edit_and_approve — the final message that will be sent."
+              "placeholder": "Only needed for edit_and_approve \u2014 the final message that will be sent."
             },
             {
               "fieldLabel": "Reason",
@@ -91,7 +91,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -136,14 +136,14 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "const form = $('Process approval').all()[0].json;\nconst approval = $('Find approval').all()[0].json;\nconst matches = $('Read buyer_matches').all().map(i => i.json);\n\nconst decisionInput = String(form['Decision'] || '').trim();\nconst editedMsg = String(form['Edited message'] || '').trim();\nconst reasonInput = String(form['Reason'] || '').trim();\nconst approver = String(form['Approver name'] || '').trim() || 'manager_amina';\nconst ts = $now.toISO();\n\nconst original = String(approval.original_content || '');\nconst approvalType = String(approval.approval_type || '');\nconst isOutreach = approvalType === 'buyer_outreach';\n\nlet new_decision, send, final_content, reason;\nswitch (decisionInput) {\n  case 'approve':\n    new_decision = 'approved'; send = true; final_content = original; reason = reasonInput; break;\n  case 'edit_and_approve':\n    if (!editedMsg) throw new Error('Edited message is required for edit_and_approve.');\n    new_decision = 'edited'; send = true; final_content = editedMsg; reason = reasonInput; break;\n  case 'reject':\n    if (!reasonInput) throw new Error('A reason is required to reject.');\n    new_decision = 'rejected'; send = false; final_content = ''; reason = reasonInput; break;\n  case 'request_buyer_verification':\n    new_decision = 'needs_verification'; send = false; final_content = ''; reason = reasonInput || 'Buyer verification requested before outreach'; break;\n  case 'request_farmer_confirmation':\n    new_decision = 'needs_verification'; send = false; final_content = ''; reason = reasonInput || 'Farmer confirmation requested'; break;\n  default:\n    throw new Error('Unknown decision: ' + decisionInput);\n}\n\nlet produce_lot_id = '', buyer_id = '', deal_id = '';\nif (isOutreach) {\n  const match = matches.find(m => String(m.id).trim() === String(approval.related_entity_id).trim());\n  if (match) {\n    produce_lot_id = match.produce_lot_id || '';\n    buyer_id = match.buyer_id || '';\n    deal_id = 'deal_' + produce_lot_id + '_' + buyer_id;\n  } else {\n    deal_id = 'deal_' + (approval.related_entity_id || 'unknown');\n  }\n}\n\nconst send_subject = isOutreach\n  ? ('FarmGateIQ — Approved outreach re: lot ' + produce_lot_id + ' (buyer ' + buyer_id + ')')\n  : 'FarmGateIQ — Approved farmer price update';\n\nreturn [{ json: {\n  approval_id: approval.id,\n  approval_type: approvalType,\n  is_outreach: isOutreach ? 'TRUE' : 'FALSE',\n  new_decision: new_decision,\n  approved_by: approver,\n  final_content: final_content,\n  reason: reason,\n  decided_at: ts,\n  send: send ? 'TRUE' : 'FALSE',\n  produce_lot_id: produce_lot_id,\n  buyer_id: buyer_id,\n  deal_id: deal_id,\n  send_subject: send_subject\n}}];"
+        "jsCode": "const form = $('Process approval').all()[0].json;\nconst approval = $('Find approval').all()[0].json;\nconst matches = $('Read buyer_matches').all().map(i => i.json);\n\nconst decisionInput = String(form['Decision'] || '').trim();\nconst editedMsg = String(form['Edited message'] || '').trim();\nconst reasonInput = String(form['Reason'] || '').trim();\nconst approver = String(form['Approver name'] || '').trim() || 'manager_amina';\nconst ts = $now.toISO();\n\nconst original = String(approval.original_content || '');\nconst approvalType = String(approval.approval_type || '');\nconst isOutreach = approvalType === 'buyer_outreach';\n\nlet new_decision, send, final_content, reason;\nswitch (decisionInput) {\n  case 'approve':\n    new_decision = 'approved'; send = true; final_content = original; reason = reasonInput; break;\n  case 'edit_and_approve':\n    if (!editedMsg) throw new Error('Edited message is required for edit_and_approve.');\n    new_decision = 'edited'; send = true; final_content = editedMsg; reason = reasonInput; break;\n  case 'reject':\n    if (!reasonInput) throw new Error('A reason is required to reject.');\n    new_decision = 'rejected'; send = false; final_content = ''; reason = reasonInput; break;\n  case 'request_buyer_verification':\n    new_decision = 'needs_verification'; send = false; final_content = ''; reason = reasonInput || 'Buyer verification requested before outreach'; break;\n  case 'request_farmer_confirmation':\n    new_decision = 'needs_verification'; send = false; final_content = ''; reason = reasonInput || 'Farmer confirmation requested'; break;\n  default:\n    throw new Error('Unknown decision: ' + decisionInput);\n}\n\nlet produce_lot_id = '', buyer_id = '', deal_id = '';\nif (isOutreach) {\n  const match = matches.find(m => String(m.id).trim() === String(approval.related_entity_id).trim());\n  if (match) {\n    produce_lot_id = match.produce_lot_id || '';\n    buyer_id = match.buyer_id || '';\n    deal_id = 'deal_' + produce_lot_id + '_' + buyer_id;\n  } else {\n    deal_id = 'deal_' + (approval.related_entity_id || 'unknown');\n  }\n}\n\nconst send_subject = isOutreach\n  ? ('FarmGateIQ \u2014 Approved outreach re: lot ' + produce_lot_id + ' (buyer ' + buyer_id + ')')\n  : 'FarmGateIQ \u2014 Approved farmer price update';\n\nreturn [{ json: {\n  approval_id: approval.id,\n  approval_type: approvalType,\n  is_outreach: isOutreach ? 'TRUE' : 'FALSE',\n  new_decision: new_decision,\n  approved_by: approver,\n  final_content: final_content,\n  reason: reason,\n  decided_at: ts,\n  send: send ? 'TRUE' : 'FALSE',\n  produce_lot_id: produce_lot_id,\n  buyer_id: buyer_id,\n  deal_id: deal_id,\n  send_subject: send_subject\n}}];"
       },
       "id": "f6a10005-5555-4f60-9a05-500000000005",
       "name": "Decide",
@@ -336,7 +336,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -532,7 +532,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -784,7 +784,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -793,7 +793,7 @@
       "parameters": {
         "sendTo": "fisayo.dmg@gmail.com",
         "subject": "={{ $('Decide').all()[0].json.send_subject }}",
-        "message": "={{ '<p><i>[Simulated buyer outreach — intended recipient: buyer ' + $('Decide').all()[0].json.buyer_id + ' for lot ' + $('Decide').all()[0].json.produce_lot_id + ']</i></p><p>' + $('Decide').all()[0].json.final_content + '</p><hr><p style=\"color:#888\">Approved by ' + $('Decide').all()[0].json.approved_by + ' via FarmGateIQ. This is a prototype simulation.</p>' }}",
+        "message": "={{ '<p><i>[Simulated buyer outreach \u2014 intended recipient: buyer ' + $('Decide').all()[0].json.buyer_id + ' for lot ' + $('Decide').all()[0].json.produce_lot_id + ']</i></p><p>' + $('Decide').all()[0].json.final_content + '</p><hr><p style=\"color:#888\">Approved by ' + $('Decide').all()[0].json.approved_by + ' via FarmGateIQ. This is a prototype simulation.</p>' }}",
         "options": {}
       },
       "id": "f6a1000e-eeee-4f60-9a05-500000000014",
@@ -807,7 +807,7 @@
       "webhookId": "d1e2f3a4-7e82-4c1f-9acc-001112030411",
       "credentials": {
         "gmailOAuth2": {
-          "id": "CzCD5Wsv5f2rbOIk",
+          "id": "2r8GogZEDpu5efcc",
           "name": "FarmGateIQ Gmail"
         }
       }
@@ -830,7 +830,7 @@
       "webhookId": "e2f3a4b5-8f92-4d2a-9bdd-001112030412",
       "credentials": {
         "gmailOAuth2": {
-          "id": "CzCD5Wsv5f2rbOIk",
+          "id": "2r8GogZEDpu5efcc",
           "name": "FarmGateIQ Gmail"
         }
       }

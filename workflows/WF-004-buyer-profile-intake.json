@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "FarmGateIQ — Buyer Profile",
+        "formTitle": "FarmGateIQ \u2014 Buyer Profile",
         "formDescription": "Register a buyer profile. Trust status is set by the cooperative manager, not automatically. Privacy: contact details (name, phone, email) are stored only to enable approved produce outreach and are not shared without consent. Phone numbers are kept out of system logs. (Nigeria Data Protection Act, 2023.)",
         "formFields": {
           "values": [
@@ -45,9 +45,15 @@
               "fieldType": "dropdown",
               "fieldOptions": {
                 "values": [
-                  { "option": "bag" },
-                  { "option": "kg" },
-                  { "option": "tonne" }
+                  {
+                    "option": "bag"
+                  },
+                  {
+                    "option": "kg"
+                  },
+                  {
+                    "option": "tonne"
+                  }
                 ]
               },
               "requiredField": true
@@ -69,10 +75,18 @@
               "fieldType": "dropdown",
               "fieldOptions": {
                 "values": [
-                  { "option": "unverified" },
-                  { "option": "verified" },
-                  { "option": "preferred" },
-                  { "option": "blocked" }
+                  {
+                    "option": "unverified"
+                  },
+                  {
+                    "option": "verified"
+                  },
+                  {
+                    "option": "preferred"
+                  },
+                  {
+                    "option": "blocked"
+                  }
                 ]
               },
               "requiredField": true
@@ -87,7 +101,9 @@
               "fieldType": "checkbox",
               "fieldOptions": {
                 "values": [
-                  { "option": "I confirm this buyer has agreed to be contacted by the cooperative for produce outreach, in line with the privacy notice above." }
+                  {
+                    "option": "I confirm this buyer has agreed to be contacted by the cooperative for produce outreach, in line with the privacy notice above."
+                  }
                 ]
               },
               "requiredField": true
@@ -123,21 +139,96 @@
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "wf004-ef-01", "name": "id", "value": "={{ \"buyer_\" + $now.toISO() }}", "type": "string" },
-            { "id": "wf004-ef-02", "name": "name", "value": "={{ $json['Buyer name'] }}", "type": "string" },
-            { "id": "wf004-ef-03", "name": "contact_name", "value": "={{ $json['Contact name'] }}", "type": "string" },
-            { "id": "wf004-ef-04", "name": "phone", "value": "={{ $json['Phone'] }}", "type": "string" },
-            { "id": "wf004-ef-05", "name": "email", "value": "={{ $json['Email'] }}", "type": "string" },
-            { "id": "wf004-ef-06", "name": "commodity_interests", "value": "={{ $json.norm_interests }}", "type": "string" },
-            { "id": "wf004-ef-07", "name": "min_quantity", "value": "={{ $json['Min quantity'] }}", "type": "number" },
-            { "id": "wf004-ef-08", "name": "max_quantity", "value": "={{ $json['Max quantity'] }}", "type": "number" },
-            { "id": "wf004-ef-09", "name": "preferred_unit", "value": "={{ $json['Preferred unit'] }}", "type": "string" },
-            { "id": "wf004-ef-10", "name": "preferred_locations", "value": "={{ $json['Preferred locations'] }}", "type": "string" },
-            { "id": "wf004-ef-11", "name": "quality_requirements", "value": "={{ $json['Quality requirements'] }}", "type": "string" },
-            { "id": "wf004-ef-12", "name": "payment_terms", "value": "={{ $json['Payment terms'] }}", "type": "string" },
-            { "id": "wf004-ef-13", "name": "trust_status", "value": "={{ $json['Trust status'] }}", "type": "string" },
-            { "id": "wf004-ef-14", "name": "notes", "value": "={{ $json['Notes'] }}", "type": "string" },
-            { "id": "wf004-ef-15", "name": "prototype_data", "value": "TRUE", "type": "string" }
+            {
+              "id": "wf004-ef-01",
+              "name": "id",
+              "value": "={{ \"buyer_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-02",
+              "name": "name",
+              "value": "={{ $json['Buyer name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-03",
+              "name": "contact_name",
+              "value": "={{ $json['Contact name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-04",
+              "name": "phone",
+              "value": "={{ $json['Phone'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-05",
+              "name": "email",
+              "value": "={{ $json['Email'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-06",
+              "name": "commodity_interests",
+              "value": "={{ $json.norm_interests }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-07",
+              "name": "min_quantity",
+              "value": "={{ $json['Min quantity'] }}",
+              "type": "number"
+            },
+            {
+              "id": "wf004-ef-08",
+              "name": "max_quantity",
+              "value": "={{ $json['Max quantity'] }}",
+              "type": "number"
+            },
+            {
+              "id": "wf004-ef-09",
+              "name": "preferred_unit",
+              "value": "={{ $json['Preferred unit'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-10",
+              "name": "preferred_locations",
+              "value": "={{ $json['Preferred locations'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-11",
+              "name": "quality_requirements",
+              "value": "={{ $json['Quality requirements'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-12",
+              "name": "payment_terms",
+              "value": "={{ $json['Payment terms'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-13",
+              "name": "trust_status",
+              "value": "={{ $json['Trust status'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-14",
+              "name": "notes",
+              "value": "={{ $json['Notes'] }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-ef-15",
+              "name": "prototype_data",
+              "value": "TRUE",
+              "type": "string"
+            }
           ]
         },
         "options": {}
@@ -169,23 +260,146 @@
         "columns": {
           "mappingMode": "autoMapInputData",
           "value": {},
-          "matchingColumns": [ "id" ],
+          "matchingColumns": [
+            "id"
+          ],
           "schema": [
-            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
-            { "id": "name", "displayName": "name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "contact_name", "displayName": "contact_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "phone", "displayName": "phone", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "email", "displayName": "email", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "commodity_interests", "displayName": "commodity_interests", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "min_quantity", "displayName": "min_quantity", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "max_quantity", "displayName": "max_quantity", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "preferred_unit", "displayName": "preferred_unit", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "preferred_locations", "displayName": "preferred_locations", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "quality_requirements", "displayName": "quality_requirements", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "payment_terms", "displayName": "payment_terms", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "trust_status", "displayName": "trust_status", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "notes", "displayName": "notes", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "prototype_data", "displayName": "prototype_data", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_name",
+              "displayName": "contact_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "commodity_interests",
+              "displayName": "commodity_interests",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "min_quantity",
+              "displayName": "min_quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "max_quantity",
+              "displayName": "max_quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "preferred_unit",
+              "displayName": "preferred_unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "preferred_locations",
+              "displayName": "preferred_locations",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quality_requirements",
+              "displayName": "quality_requirements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_terms",
+              "displayName": "payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "trust_status",
+              "displayName": "trust_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prototype_data",
+              "displayName": "prototype_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
@@ -202,7 +416,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -211,15 +425,60 @@
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "wf004-al-01", "name": "id", "value": "={{ \"audit_\" + $now.toISO() }}", "type": "string" },
-            { "id": "wf004-al-02", "name": "event_type", "value": "submission", "type": "string" },
-            { "id": "wf004-al-03", "name": "actor", "value": "manager", "type": "string" },
-            { "id": "wf004-al-04", "name": "entity_type", "value": "buyer", "type": "string" },
-            { "id": "wf004-al-05", "name": "entity_id", "value": "={{ $('Assemble buyer row').all()[0].json.id }}", "type": "string" },
-            { "id": "wf004-al-06", "name": "input_summary", "value": "={{ $('Assemble buyer row').all()[0].json.name + ' / interests: ' + $('Assemble buyer row').all()[0].json.commodity_interests }}", "type": "string" },
-            { "id": "wf004-al-07", "name": "output_summary", "value": "={{ 'trust: ' + $('Assemble buyer row').all()[0].json.trust_status + ' | qty ' + $('Assemble buyer row').all()[0].json.min_quantity + '-' + $('Assemble buyer row').all()[0].json.max_quantity + ' | locations: ' + $('Assemble buyer row').all()[0].json.preferred_locations }}", "type": "string" },
-            { "id": "wf004-al-08", "name": "prompt_version", "value": "n/a", "type": "string" },
-            { "id": "wf004-al-09", "name": "timestamp", "value": "={{ $now.toISO() }}", "type": "string" }
+            {
+              "id": "wf004-al-01",
+              "name": "id",
+              "value": "={{ \"audit_\" + $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-al-02",
+              "name": "event_type",
+              "value": "submission",
+              "type": "string"
+            },
+            {
+              "id": "wf004-al-03",
+              "name": "actor",
+              "value": "manager",
+              "type": "string"
+            },
+            {
+              "id": "wf004-al-04",
+              "name": "entity_type",
+              "value": "buyer",
+              "type": "string"
+            },
+            {
+              "id": "wf004-al-05",
+              "name": "entity_id",
+              "value": "={{ $('Assemble buyer row').all()[0].json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-al-06",
+              "name": "input_summary",
+              "value": "={{ $('Assemble buyer row').all()[0].json.name + ' / interests: ' + $('Assemble buyer row').all()[0].json.commodity_interests }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-al-07",
+              "name": "output_summary",
+              "value": "={{ 'trust: ' + $('Assemble buyer row').all()[0].json.trust_status + ' | qty ' + $('Assemble buyer row').all()[0].json.min_quantity + '-' + $('Assemble buyer row').all()[0].json.max_quantity + ' | locations: ' + $('Assemble buyer row').all()[0].json.preferred_locations }}",
+              "type": "string"
+            },
+            {
+              "id": "wf004-al-08",
+              "name": "prompt_version",
+              "value": "n/a",
+              "type": "string"
+            },
+            {
+              "id": "wf004-al-09",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
           ]
         },
         "options": {}
@@ -251,17 +510,92 @@
         "columns": {
           "mappingMode": "autoMapInputData",
           "value": {},
-          "matchingColumns": [ "id" ],
+          "matchingColumns": [
+            "id"
+          ],
           "schema": [
-            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
-            { "id": "event_type", "displayName": "event_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "actor", "displayName": "actor", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "entity_type", "displayName": "entity_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "entity_id", "displayName": "entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "input_summary", "displayName": "input_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "output_summary", "displayName": "output_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "prompt_version", "displayName": "prompt_version", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "timestamp", "displayName": "timestamp", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "actor",
+              "displayName": "actor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_type",
+              "displayName": "entity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_id",
+              "displayName": "entity_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_summary",
+              "displayName": "input_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output_summary",
+              "displayName": "output_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_version",
+              "displayName": "prompt_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
@@ -278,7 +612,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -287,19 +621,59 @@
   "pinData": {},
   "connections": {
     "On buyer profile submission": {
-      "main": [ [ { "node": "Validate buyer profile", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Validate buyer profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Validate buyer profile": {
-      "main": [ [ { "node": "Assemble buyer row", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Assemble buyer row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Assemble buyer row": {
-      "main": [ [ { "node": "Append to buyers", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Append to buyers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Append to buyers": {
-      "main": [ [ { "node": "Prepare audit log row", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Prepare audit log row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Prepare audit log row": {
-      "main": [ [ { "node": "Append to audit_log", "type": "main", "index": 0 } ] ]
+      "main": [
+        [
+          {
+            "node": "Append to audit_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,

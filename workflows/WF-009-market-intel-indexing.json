@@ -38,7 +38,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "bk4Wc3u56mfbUMie",
+          "id": "4OxIudkd4v5vTK0A",
           "name": "FarmGateIQ Google Drive"
         }
       }
@@ -63,7 +63,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "bk4Wc3u56mfbUMie",
+          "id": "4OxIudkd4v5vTK0A",
           "name": "FarmGateIQ Google Drive"
         }
       }
@@ -109,7 +109,7 @@
         }
       },
       "id": "dca0aa29-1d00-4ae1-8927-8487a6ab73d5",
-      "name": "Pinecone — insert market intel",
+      "name": "Pinecone \u2014 insert market intel",
       "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
       "typeVersion": 1,
       "position": [
@@ -118,7 +118,7 @@
       ],
       "credentials": {
         "pineconeApi": {
-          "id": "3OGW85ZZOkPv0zG8",
+          "id": "qseVyyfre7UOjvyV",
           "name": "FarmGateIQ Pinecone"
         }
       }
@@ -137,7 +137,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "id": "0UL419sw5uZkY2pZ",
+          "id": "udwLXrFJmHmmffoW",
           "name": "FarmGateIQ OpenAI"
         }
       }
@@ -252,7 +252,7 @@
       "main": [
         [
           {
-            "node": "Pinecone — insert market intel",
+            "node": "Pinecone \u2014 insert market intel",
             "type": "main",
             "index": 0
           }
@@ -263,7 +263,7 @@
       "ai_embedding": [
         [
           {
-            "node": "Pinecone — insert market intel",
+            "node": "Pinecone \u2014 insert market intel",
             "type": "ai_embedding",
             "index": 0
           }
@@ -274,7 +274,7 @@
       "ai_document": [
         [
           {
-            "node": "Pinecone — insert market intel",
+            "node": "Pinecone \u2014 insert market intel",
             "type": "ai_document",
             "index": 0
           }

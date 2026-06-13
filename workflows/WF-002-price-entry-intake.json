@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "formTitle": "FarmGateIQ — Price Entry",
-        "formDescription": "Record an observed maize price from a market, buyer quote, or report. Privacy: this form is for market price data only — do not enter any personal contact details here.",
+        "formTitle": "FarmGateIQ \u2014 Price Entry",
+        "formDescription": "Record an observed maize price from a market, buyer quote, or report. Privacy: this form is for market price data only \u2014 do not enter any personal contact details here.",
         "formFields": {
           "values": [
             {
@@ -28,9 +28,15 @@
               "fieldType": "dropdown",
               "fieldOptions": {
                 "values": [
-                  { "option": "per bag" },
-                  { "option": "per kg" },
-                  { "option": "per tonne" }
+                  {
+                    "option": "per bag"
+                  },
+                  {
+                    "option": "per kg"
+                  },
+                  {
+                    "option": "per tonne"
+                  }
                 ]
               },
               "requiredField": true
@@ -40,10 +46,18 @@
               "fieldType": "dropdown",
               "fieldOptions": {
                 "values": [
-                  { "option": "manual" },
-                  { "option": "buyer_quote" },
-                  { "option": "public_report" },
-                  { "option": "sample" }
+                  {
+                    "option": "manual"
+                  },
+                  {
+                    "option": "buyer_quote"
+                  },
+                  {
+                    "option": "public_report"
+                  },
+                  {
+                    "option": "sample"
+                  }
                 ]
               },
               "requiredField": true
@@ -67,9 +81,15 @@
               "fieldType": "dropdown",
               "fieldOptions": {
                 "values": [
-                  { "option": "low" },
-                  { "option": "medium" },
-                  { "option": "high" }
+                  {
+                    "option": "low"
+                  },
+                  {
+                    "option": "medium"
+                  },
+                  {
+                    "option": "high"
+                  }
                 ]
               },
               "requiredField": true
@@ -206,17 +226,106 @@
             "id"
           ],
           "schema": [
-            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
-            { "id": "commodity", "displayName": "commodity", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "location", "displayName": "location", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "price", "displayName": "price", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "price_unit", "displayName": "price_unit", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "source_type", "displayName": "source_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "source_name", "displayName": "source_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "observed_date", "displayName": "observed_date", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "entered_by", "displayName": "entered_by", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "confidence", "displayName": "confidence", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "prototype_data", "displayName": "prototype_data", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "commodity",
+              "displayName": "commodity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price_unit",
+              "displayName": "price_unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_type",
+              "displayName": "source_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_name",
+              "displayName": "source_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_date",
+              "displayName": "observed_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entered_by",
+              "displayName": "entered_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prototype_data",
+              "displayName": "prototype_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
@@ -233,7 +342,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -331,15 +440,88 @@
             "id"
           ],
           "schema": [
-            { "id": "id", "displayName": "id", "required": false, "defaultMatch": true, "display": true, "type": "string", "canBeUsedToMatch": true, "removed": false },
-            { "id": "event_type", "displayName": "event_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "actor", "displayName": "actor", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "entity_type", "displayName": "entity_type", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "entity_id", "displayName": "entity_id", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "input_summary", "displayName": "input_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "output_summary", "displayName": "output_summary", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "prompt_version", "displayName": "prompt_version", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
-            { "id": "timestamp", "displayName": "timestamp", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true }
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "actor",
+              "displayName": "actor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_type",
+              "displayName": "entity_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "entity_id",
+              "displayName": "entity_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input_summary",
+              "displayName": "input_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output_summary",
+              "displayName": "output_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_version",
+              "displayName": "prompt_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
@@ -356,7 +538,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "yzReTqguKip3S2yU",
+          "id": "6fgPX3DIeadPIyK8",
           "name": "FarmGateIQ Google Sheets"
         }
       }
@@ -367,35 +549,55 @@
     "On price entry submission": {
       "main": [
         [
-          { "node": "Validate price entry", "type": "main", "index": 0 }
+          {
+            "node": "Validate price entry",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
     "Validate price entry": {
       "main": [
         [
-          { "node": "Assemble price entry row", "type": "main", "index": 0 }
+          {
+            "node": "Assemble price entry row",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
     "Assemble price entry row": {
       "main": [
         [
-          { "node": "Append to price_entries", "type": "main", "index": 0 }
+          {
+            "node": "Append to price_entries",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
     "Append to price_entries": {
       "main": [
         [
-          { "node": "Prepare audit log row", "type": "main", "index": 0 }
+          {
+            "node": "Prepare audit log row",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
     "Prepare audit log row": {
       "main": [
         [
-          { "node": "Append to audit_log", "type": "main", "index": 0 }
+          {
+            "node": "Append to audit_log",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     }
